@@ -59,7 +59,7 @@ git push origin feat/your-feature
 ```bash
 # 在 GitHub 上創建 PR: dev -> main
 # 標題格式: [RELEASE] v1.2.0 - Feature release
-# 審查人數: 2人
+# 審查人數: 1人
 # 合併方式: Merge commit
 ```
 
@@ -142,7 +142,7 @@ Closes #123
 
 | 分支 | 審查人數 | Status Checks | 備註 |
 |------|---------|---------------|------|
-| **main** | 2人 | 全部檢查 | 最嚴格 |
+| **main** | 1人 | 全部檢查 | 最嚴格 |
 | **dev** | 1人 | 全部檢查 | 標準 |
 | **test** | 1人 | 基本檢查 | 寬鬆 |
 

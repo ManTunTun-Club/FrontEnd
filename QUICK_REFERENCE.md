@@ -176,9 +176,9 @@ git branch -a
 git branch -d feat/description
 ```
 
-### 強制同步遠端分支 (小心使用!)
+### 刪除遠端分支
 ```bash
-git push origin feat/description --force-with-lease
+git push origin --delete feat/description 
 ```
 
 ---
@@ -302,7 +302,7 @@ git push origin <branch-name>
 1. **三分支策略**: main (穩定) <- dev (整合) <- test (測試)
 2. **分支命名**: `type/description` (小寫 + 連字符)
 3. **PR 標題**: `[TARGET] type: description`
-4. **審查人數**: test(1) -> dev(1) -> main(2)
+4. **審查人數**: test(1) -> dev(1) -> main(1)
 5. **合併策略**: test 用 Squash, dev/main 用 Merge commit
 6. **測試優先**: 本地測試 -> CI 檢查 -> Code Review (完整版)
 7. **及時溝通**: 遇到問題立即提問

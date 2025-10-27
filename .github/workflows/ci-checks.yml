@@ -1,0 +1,264 @@
+name: CI Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - test
+  push:
+    branches:
+      - main
+      - dev
+      - test
+
+jobs:
+  branch-naming-check:
+    name: Branch Naming Convention
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Check branch name
+        run: |
+          BRANCH_NAME="${{ github.head_ref }}"
+          
+          # Skip check for permanent branches
+          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "dev" || "$BRANCH_NAME" == "test" ]]; then
+            echo "✅ Permanent branch, skipping naming check"
+            exit 0
+          fi
+          
+          # Check branch naming convention
+          if [[ ! "$BRANCH_NAME" =~ ^(feat|fix|docs|refactor|perf|test|security|project)/.+ ]]; then
+            echo "❌ Branch name '$BRANCH_NAME' does not follow naming convention!"
+            echo ""
+            echo "Expected format: <type>/<description>"
+            echo "Valid types: feat, fix, docs, refactor, perf, test, security, project"
+            echo ""
+            echo "Examples:"
+            echo "  ✅ feat/user-authentication"
+            echo "  ✅ fix/login-bug"
+            echo "  ✅ docs/update-readme"
+            exit 1
+          fi
+          
+          echo "✅ Branch name follows convention: $BRANCH_NAME"
+
+  pr-validation:
+    name: PR Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Check PR title format
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          BASE_BRANCH="${{ github.base_ref }}"
+          
+          echo "PR Title: $PR_TITLE"
+          echo "Target Branch: $BASE_BRANCH"
+          
+          # Check title format based on target branch
+          if [[ "$BASE_BRANCH" == "test" ]] && [[ ! "$PR_TITLE" =~ ^\[TEST\] ]]; then
+            echo "⚠️  PR to test branch should start with [TEST]"
+            echo "   Example: [TEST] feat: add user authentication"
+          elif [[ "$BASE_BRANCH" == "dev" ]] && [[ ! "$PR_TITLE" =~ ^\[DEV\] ]]; then
+            echo "⚠️  PR to dev branch should start with [DEV]"
+            echo "   Example: [DEV] Merge test - user authentication"
+          elif [[ "$BASE_BRANCH" == "main" ]] && [[ ! "$PR_TITLE" =~ ^\[RELEASE\] ]]; then
+            echo "⚠️  PR to main branch should start with [RELEASE]"
+            echo "   Example: [RELEASE] v1.2.0 - Feature release"
+          else
+            echo "✅ PR title format is correct"
+          fi
+
+      - name: Check PR description
+        run: |
+          PR_BODY="${{ github.event.pull_request.body }}"
+          
+          if [[ -z "$PR_BODY" ]] || [[ "$PR_BODY" == "null" ]]; then
+            echo "⚠️  PR description is empty!"
+            echo "   Please provide a description of your changes."
+          else
+            echo "✅ PR has description"
+          fi
+
+      - name: Check PR labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(label => label.name);
+            
+            console.log('PR Labels:', labels.length > 0 ? labels.join(', ') : 'None');
+            
+            if (labels.length === 0) {
+              console.log('⚠️  Consider adding labels to categorize this PR');
+              console.log('   Examples: bug, feature, documentation, enhancement');
+            } else {
+              console.log('✅ PR has labels');
+            }
+
+  file-changes-check:
+    name: File Changes Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check changed files
+        run: |
+          echo "=== Files changed in this PR ==="
+          git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
+          
+          echo ""
+          echo "=== File statistics ==="
+          FILES_CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | wc -l)
+          LINES_ADDED=$(git diff --numstat ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | awk '{add+=$1} END {print add}')
+          LINES_DELETED=$(git diff --numstat ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | awk '{del+=$2} END {print del}')
+          
+          echo "📁 Files changed: $FILES_CHANGED"
+          echo "➕ Lines added: $LINES_ADDED"
+          echo "➖ Lines deleted: $LINES_DELETED"
+          
+          # Large PR warning
+          if [ "$FILES_CHANGED" -gt 50 ]; then
+            echo ""
+            echo "⚠️  Large PR detected ($FILES_CHANGED files changed)"
+            echo "   Consider breaking this into smaller PRs for easier review"
+          fi
+
+  commit-message-check:
+    name: Commit Message Validation
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check commit messages
+        run: |
+          echo "=== Checking commit messages ==="
+          
+          # Get all commits in this PR
+          COMMITS=$(git log --pretty=format:"%s" ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          
+          echo "$COMMITS" | while read -r commit_msg; do
+            echo "Checking: $commit_msg"
+            
+            # Check if commit message follows conventional commits format
+            if [[ "$commit_msg" =~ ^(feat|fix|docs|style|refactor|perf|test|chore|revert)(\(.+\))?: ]]; then
+              echo "  ✅ Valid format"
+            else
+              echo "  ⚠️  Doesn't follow conventional commits format"
+              echo "     Expected: type(scope): description"
+              echo "     Example: feat(auth): add login functionality"
+            fi
+          done
+
+  security-basic-check:
+    name: Basic Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for sensitive files
+        run: |
+          echo "=== Checking for sensitive files ==="
+          
+          SENSITIVE_PATTERNS=(
+            "*.pem"
+            "*.key"
+            "*.p12"
+            "*.pfx"
+            "*.env"
+            ".env.*"
+            "*_rsa"
+            "*_dsa"
+            "*.ppk"
+            "id_rsa*"
+            "id_dsa*"
+          )
+          
+          FOUND_SENSITIVE=0
+          
+          for pattern in "${SENSITIVE_PATTERNS[@]}"; do
+            if find . -name "$pattern" -not -path "*/node_modules/*" -not -path "*/.git/*" | grep -q .; then
+              echo "⚠️  Found potentially sensitive files matching: $pattern"
+              find . -name "$pattern" -not -path "*/node_modules/*" -not -path "*/.git/*"
+              FOUND_SENSITIVE=1
+            fi
+          done
+          
+          if [ $FOUND_SENSITIVE -eq 0 ]; then
+            echo "✅ No sensitive files detected"
+          else
+            echo ""
+            echo "⚠️  Please review the files above and ensure they should be committed"
+          fi
+
+      - name: Check for hardcoded secrets
+        run: |
+          echo ""
+          echo "=== Checking for hardcoded secrets ==="
+          
+          # Common secret patterns
+          if grep -r -E "(password|passwd|pwd|secret|token|api_key|apikey|access_key|private_key)\s*=\s*['\"][^'\"]+['\"]" \
+            --include="*.js" --include="*.ts" --include="*.jsx" --include="*.tsx" \
+            --include="*.py" --include="*.java" --include="*.go" \
+            --exclude-dir=node_modules --exclude-dir=.git . > /dev/null 2>&1; then
+            
+            echo "⚠️  Potential hardcoded secrets found!"
+            echo "   Please review your code and use environment variables instead"
+            echo ""
+            echo "Found in:"
+            grep -r -l -E "(password|passwd|pwd|secret|token|api_key|apikey|access_key|private_key)\s*=\s*['\"][^'\"]+['\"]" \
+              --include="*.js" --include="*.ts" --include="*.jsx" --include="*.tsx" \
+              --include="*.py" --include="*.java" --include="*.go" \
+              --exclude-dir=node_modules --exclude-dir=.git .
+          else
+            echo "✅ No obvious hardcoded secrets detected"
+          fi
+
+  all-checks-status:
+    name: All Checks Summary
+    runs-on: ubuntu-latest
+    needs: [branch-naming-check, pr-validation, file-changes-check, commit-message-check, security-basic-check]
+    if: always()
+    
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "=== Check Results Summary ==="
+          echo ""
+          echo "Branch Naming: ${{ needs.branch-naming-check.result }}"
+          echo "PR Validation: ${{ needs.pr-validation.result }}"
+          echo "File Changes: ${{ needs.file-changes-check.result }}"
+          echo "Commit Messages: ${{ needs.commit-message-check.result }}"
+          echo "Security Check: ${{ needs.security-basic-check.result }}"
+          echo ""
+          
+          if [[ "${{ needs.branch-naming-check.result }}" == "failure" ]]; then
+            echo "❌ Branch naming check failed"
+            exit 1
+          fi
+          
+          # Other checks are warnings only, don't fail the build
+          echo "✅ All required checks passed"
+          
+          if [[ "${{ needs.pr-validation.result }}" == "failure" ]] || \
+             [[ "${{ needs.file-changes-check.result }}" == "failure" ]] || \
+             [[ "${{ needs.commit-message-check.result }}" == "failure" ]] || \
+             [[ "${{ needs.security-basic-check.result }}" == "failure" ]]; then
+            echo "⚠️  Some optional checks have warnings - please review them"
+          fi

@@ -1,0 +1,247 @@
+name: Branch Management
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - dev
+
+jobs:
+  recreate-test-branch:
+    name: Recreate Test Branch After Merge to Dev
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.base_ref == 'dev'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Recreate test branch from dev
+        run: |
+          echo "🔄 Recreating test branch from dev..."
+          
+          # Fetch all branches
+          git fetch origin
+          
+          # Delete old test branch (locally and remotely)
+          git branch -D test || true
+          git push origin --delete test || true
+          
+          # Create new test branch from dev
+          git checkout dev
+          git pull origin dev
+          git checkout -b test
+          git push origin test
+          
+          echo "✅ Test branch has been recreated from dev"
+
+      - name: Create notification comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Test branch has been automatically recreated from dev branch.'
+            })
+
+  recreate-dev-branch:
+    name: Recreate Dev Branch After Merge to Main
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.base_ref == 'main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Recreate dev branch from main
+        run: |
+          echo "🔄 Recreating dev branch from main..."
+          
+          # Fetch all branches
+          git fetch origin
+          
+          # Delete old dev branch (locally and remotely)
+          git branch -D dev || true
+          git push origin --delete dev || true
+          
+          # Create new dev branch from main
+          git checkout main
+          git pull origin main
+          git checkout -b dev
+          git push origin dev
+          
+          echo "✅ Dev branch has been recreated from main"
+
+      - name: Recreate test branch from dev
+        run: |
+          echo "🔄 Also recreating test branch from new dev..."
+          
+          # Delete old test branch
+          git branch -D test || true
+          git push origin --delete test || true
+          
+          # Create new test branch from dev
+          git checkout dev
+          git checkout -b test
+          git push origin test
+          
+          echo "✅ Test branch has been recreated from dev"
+
+      - name: Create notification comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Dev and test branches have been automatically recreated from main branch.'
+            })
+
+  auto-delete-merged-branches:
+    name: Auto Delete Merged Feature Branches
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == true && github.base_ref == 'test'
+    
+    steps:
+      - name: Delete merged feature branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branchName = context.payload.pull_request.head.ref;
+            
+            // Only delete feature branches (not permanent branches)
+            if (branchName !== 'main' && branchName !== 'dev' && branchName !== 'test') {
+              try {
+                await github.rest.git.deleteRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${branchName}`
+                });
+                console.log(`✅ Deleted merged branch: ${branchName}`);
+                
+                // Post comment
+                await github.rest.issues.createComment({
+                  issue_number: context.issue.number,
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  body: `✅ Feature branch \`${branchName}\` has been automatically deleted after merge.`
+                });
+              } catch (error) {
+                console.log(`❌ Failed to delete branch ${branchName}: ${error.message}`);
+              }
+            }
+
+  sync-branches-on-push:
+    name: Keep Branches in Sync
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+
+      - name: Sync downstream branches
+        run: |
+          PUSHED_BRANCH="${{ github.ref_name }}"
+          echo "📤 Changes pushed to: $PUSHED_BRANCH"
+          
+          # If main was updated, sync to dev and test
+          if [ "$PUSHED_BRANCH" == "main" ]; then
+            echo "🔄 Syncing main changes to dev..."
+            git fetch origin
+            git checkout dev
+            git merge origin/main --no-ff -m "chore: sync from main"
+            git push origin dev
+            
+            echo "🔄 Syncing dev changes to test..."
+            git checkout test
+            git merge origin/dev --no-ff -m "chore: sync from dev"
+            git push origin test
+          fi
+          
+          # If dev was updated, sync to test
+          if [ "$PUSHED_BRANCH" == "dev" ]; then
+            echo "🔄 Syncing dev changes to test..."
+            git fetch origin
+            git checkout test
+            git merge origin/dev --no-ff -m "chore: sync from dev"
+            git push origin test
+          fi
+          
+          echo "✅ Branch synchronization complete"
+
+  stale-branch-check:
+    name: Check for Stale Branches
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find stale branches
+        run: |
+          echo "🔍 Checking for stale feature branches..."
+          
+          # Get branches older than 30 days
+          STALE_BRANCHES=$(git for-each-ref --sort=-committerdate --format='%(refname:short)|%(committerdate:relative)' refs/remotes/origin/ | \
+            grep -v 'origin/main\|origin/dev\|origin/test' | \
+            awk -F'|' '{if ($2 ~ /months?|years?/) print $1}')
+          
+          if [ -z "$STALE_BRANCHES" ]; then
+            echo "✅ No stale branches found"
+          else
+            echo "⚠️  Found stale branches (older than 30 days):"
+            echo "$STALE_BRANCHES"
+            echo ""
+            echo "Consider cleaning up these branches if they're no longer needed."
+          fi
+
+  protect-permanent-branches:
+    name: Prevent Direct Pushes to Protected Branches
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/test')
+    
+    steps:
+      - name: Check if push is from merge
+        run: |
+          # This job serves as a reminder to configure branch protection rules
+          # Direct pushes should be blocked by GitHub branch protection
+          echo "⚠️  Ensure branch protection rules are enabled!"
+          echo "This push should have come through a Pull Request."
+          echo ""
+          echo "Configure at: Settings → Branches → Branch protection rules"

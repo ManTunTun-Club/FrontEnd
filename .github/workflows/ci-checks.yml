@@ -74,16 +74,15 @@ jobs:
           fi
 
       - name: Check PR description
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          PR_BODY="${{ github.event.pull_request.body }}"
-          
           if [[ -z "$PR_BODY" ]] || [[ "$PR_BODY" == "null" ]]; then
             echo "⚠️  PR description is empty!"
             echo "   Please provide a description of your changes."
           else
             echo "✅ PR has description"
           fi
-
       - name: Check PR labels
         uses: actions/github-script@v7
         with:

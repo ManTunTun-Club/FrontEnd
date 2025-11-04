@@ -80,7 +80,7 @@ export default function RootNavigator() {
       <Stack.Navigator initialRouteName="MainTabs">
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="WalletScreen" component={WalletScreen} options={{ headerShown: false }} />
-       {/* <Stack.Screen name="BudgetScreen" component={BudgetScreen} options={{ headerShown: false }} /> */}
+       <Stack.Screen name="BudgetScreen" component={BudgetScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

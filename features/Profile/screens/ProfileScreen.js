@@ -10,14 +10,14 @@ export default function ProfileScreen() {
   const mallTotal = 2000;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.avatar}/>
         <Text style={styles.title}>名稱</Text>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.container, {paddingBottom: 100}]}>
+      <ScrollView contentContainerStyle={styles.container}>
         {/* 點選區塊 */}
         <View style={styles.row}>
           <ActionTile label="提醒" />
@@ -38,18 +38,6 @@ export default function ProfileScreen() {
           <Text style={styles.settingLeft}>修改密碼</Text>
           <Text style={styles.settingRight}>›</Text>
         </View>
-        <View style={styles.settingCard}>
-          <Text style={styles.settingLeft}>修改密碼</Text>
-          <Text style={styles.settingRight}>›</Text>
-        </View>
-        <View style={styles.settingCard}>
-          <Text style={styles.settingLeft}>修改密碼</Text>
-          <Text style={styles.settingRight}>›</Text>
-        </View>
-        <View style={styles.settingCard}>
-          <Text style={styles.settingLeft}>修改密碼</Text>
-          <Text style={styles.settingRight}>›</Text>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -57,10 +45,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   safe: {flex: 1, backgroundColor: '#F6F8FA'},
-  container: {
-    padding: 16, 
-    paddingBottom: 100, // 🔧 確保底部內容不被 TabBar 蓋住
-  },
+  container: {padding: 16, paddingBottom: 40},
   header: {
     padding: 16, height: 72, flexDirection: 'row', alignItems: 'center',
     borderBottomWidth: 1, borderBottomColor: '#E6EBF3',

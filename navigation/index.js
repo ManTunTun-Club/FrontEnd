@@ -3,7 +3,9 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {ProfileScreen, WalletScreen} from '../features/Profile';
+
 import {View, Text, Image, StyleSheet } from 'react-native';
+import { BudgetScreen } from '../features/Budget';
 
 //暫時「首頁畫面」，測試導覽功能
 function HomePlaceholder() {
@@ -72,6 +74,7 @@ function MainTabs() {
       <Tab.Screen name="AI" component={AIScreen} options={{ tabBarLabel: 'AI' }} />
       <Tab.Screen name="Budget" component={BudgetScreen} options={{ tabBarLabel: 'Budget' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
+
     </Tab.Navigator>
   );
 }
@@ -83,6 +86,7 @@ export default function RootNavigator() {
       <Stack.Navigator initialRouteName="MainTabs">
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="WalletScreen" component={WalletScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="BudgetScreen" component={BudgetScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

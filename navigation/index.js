@@ -22,13 +22,7 @@ function AIScreen() {
     </View>
   );
 }
-function BudgetScreen() {
-  return (
-    <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
-      <Text>Budget Screen</Text>
-    </View>
-  );
-}
+
 function ShoppingScreen() { 
   return (
     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
@@ -86,7 +80,7 @@ export default function RootNavigator() {
       <Stack.Navigator initialRouteName="MainTabs">
         <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
         <Stack.Screen name="WalletScreen" component={WalletScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="BudgetScreen" component={BudgetScreen} options={{ headerShown: false }} />
+       {/* <Stack.Screen name="BudgetScreen" component={BudgetScreen} options={{ headerShown: false }} /> */}
       </Stack.Navigator>
     </NavigationContainer>
   );

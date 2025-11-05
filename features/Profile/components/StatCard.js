@@ -1,54 +1,113 @@
+// features/Profile/components/SavingCard.js
 import React from 'react';
-import {View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 import PropTypes from 'prop-types';
 import { COLORS } from '../../../theme/theme-color';
-import { useNavigation } from '@react-navigation/native';
 
-export default function StatCard({title, amount, onPress }) {
-  const bg = COLORS.primary;          
-  const textcolor = COLORS.onPrimary;  
-  const navigation = useNavigation();
-  
+export default function SavingCard({
+  monthLabel,       // 月份
+  totalSaved,       // 共省下
+  cashDiscount,     // 現金折扣
+  pointsRebate,     // 回饋點數
+  onPressMonth,     // 換月份
+}) {
+  const bg = COLORS.primary;
+  const fg = COLORS.onPrimary;
+
   return (
-    <View style={[styles.card, {backgroundColor: bg}]}>
-      <View>
-        <Text style={[styles.gray, {color: textcolor}]}>總計</Text>
-        <Text style={[styles.amount, {color: textcolor}]}>
-          ${amount.toLocaleString()}
+    <View style={[styles.card, { backgroundColor: bg }]}>
+      {/* 第一行 */}
+      <View style={styles.row}>
+        <View style={styles.monthBlock}>
+          <Text style={[styles.monthText, { color: fg }]}>本月</Text>
+          <Text style={[styles.monthValue, { color: fg }]}>{monthLabel}</Text>
+
+          <Pressable
+            onPress={onPressMonth}
+            hitSlop={10}
+            style={styles.monthArrowBtn}
+          >
+            <Image
+              source={require('../../../assets/icons/arrow-right-2.png')}
+              style={[styles.monthArrowIcon, { tintColor: fg, transform: [{ rotate: '90deg' }] }]}
+              resizeMode="contain"
+            />
+          </Pressable>
+        </View>
+
+        {/* 總省下金額 */}
+        <Text style={[styles.total, { color: fg }]}>
+          ${totalSaved.toLocaleString()}
         </Text>
       </View>
-      
-      <Pressable
-        onPress={() => navigation.navigate('WalletScreen')}
-        style={styles.iconButton}
-        hitSlop={12}
-      >
-        <Image
-          source={require('../../../assets/icons/arrow-right.png')}
-          style={[styles.icon, { tintColor: COLORS.onPrimary }]}
-        />
-      </Pressable>
+
+      {/* 第二行 */}
+      <View style={styles.line}>
+        <Text style={[styles.label, { color: fg, opacity: 0.95 }]}>省下的金額</Text>
+      </View>
+
+      {/* 第三行：現金折扣 */}
+      <View style={styles.line}>
+        <Text style={[styles.label, { color: fg, opacity: 0.85 }]}>現金折扣</Text>
+        <Text style={[styles.value, { color: fg }]}>
+          ${cashDiscount.toLocaleString()}
+        </Text>
+      </View>
+
+      {/* 第四行：回饋點數 */}
+      <View style={[styles.line, { marginTop: 4 }]}>
+        <Text style={[styles.label, { color: fg, opacity: 0.85 }]}>回饋點數</Text>
+        <Text style={[styles.value, { color: fg }]}>
+          ${pointsRebate.toLocaleString()}
+        </Text>
+      </View>
     </View>
   );
 }
 
-StatCard.propTypes = {
-  title: PropTypes.string,         
-  amount: PropTypes.number.isRequired,
-  onPress: PropTypes.func,
+SavingCard.propTypes = {
+  monthLabel: PropTypes.string.isRequired,
+  totalSaved: PropTypes.number.isRequired,
+  cashDiscount: PropTypes.number.isRequired,
+  pointsRebate: PropTypes.number.isRequired,
+  onPressMonth: PropTypes.func,
 };
 
-StatCard.defaultProps = {
-  onPress: () => {},
+SavingCard.defaultProps = {
+  onPressMonth: () => {},
 };
+
+
 
 const styles = StyleSheet.create({
   card: {
-    height: 96, borderRadius: 16, paddingHorizontal: 20,
-    alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     marginTop: 12,
   },
-  gray: {color: 'white', opacity: 0.85, marginBottom: 6},
-  amount: {color: 'white', fontSize: 28, fontWeight: '700'},
-  arrow: {color: 'white', fontSize: 22, fontWeight: '600'},
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+  },
+  monthBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  monthText: { fontSize: 16, fontWeight: '800', marginRight: 6 },
+  monthValue: { fontSize: 16, fontWeight: '800' },
+  monthArrowBtn: { marginLeft: 4, padding: 2 },
+  monthArrowIcon: { width: 14, height: 14, opacity: 0.95 },
+
+  total: { fontSize: 18, fontWeight: '800' },
+
+  line: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  label: { fontSize: 15, fontWeight: '700' },
+  value: { fontSize: 15, fontWeight: '700' },
 });

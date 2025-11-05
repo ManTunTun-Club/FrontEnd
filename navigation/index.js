@@ -22,7 +22,13 @@ function AIScreen() {
     </View>
   );
 }
-
+function BudgetScreen() {
+  return (
+    <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
+      <Text>Budget Screen</Text>
+    </View>
+  );
+}
 function ShoppingScreen() { 
   return (
     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
@@ -73,6 +79,7 @@ function MainTabs() {
   );
 }
 
+//Profile-member-set
 const Stack = createNativeStackNavigator();
 export default function RootNavigator() {
   return (
@@ -85,6 +92,7 @@ export default function RootNavigator() {
     </NavigationContainer>
   );
 }
+
 
 const styles = StyleSheet.create({
   center: {

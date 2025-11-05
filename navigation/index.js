@@ -38,7 +38,7 @@ function AIPlaceholder() {
     </View>
   )
 }
-function ShoppingScreen() { 
+function BudgetPlaceholder() { 
   return (
     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
       <Text>Budget Placeholder</Text>

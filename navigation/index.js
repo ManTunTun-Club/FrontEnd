@@ -38,10 +38,11 @@ function AIPlaceholder() {
     </View>
   )
 }
+
 function BudgetPlaceholder() {
   return (
     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
-      <Text>Budget Screen</Text>
+      <Text>Budget Placeholder</Text>
     </View>
   );
 }
@@ -86,7 +87,6 @@ function MainTabs() {
   );
 }
 
-const Stack = createNativeStackNavigator();
 export default function RootNavigator() {
   return (
     <NavigationContainer>

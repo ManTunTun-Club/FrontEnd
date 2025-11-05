@@ -98,6 +98,7 @@ export default function RootNavigator() {
   );
 }
 
+
 const styles = StyleSheet.create({
   tabBar: {
     height: 84,

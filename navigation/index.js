@@ -3,11 +3,12 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {ProfileScreen, WalletScreen} from '../features/Profile';
-
 import {View, Text, Image, StyleSheet } from 'react-native';
 import { BudgetScreen } from '../features/Budget';
+import {CartScreen} from '../features/Cart';
+import {CategoryScreen} from '../features/Category';
 
-//暫時「首頁畫面」，測試導覽功能
+// Temporary "Home Screen" for testing navigation functionality
 function HomePlaceholder() {
   return (
     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
@@ -31,7 +32,18 @@ function ShoppingScreen() {
   );
 }
 
-//footer導覽列
+// Cart Stack Navigator - handles cart-related pages
+const CartStack = createNativeStackNavigator();
+function CartStackNavigator() {
+  return (
+    <CartStack.Navigator screenOptions={{ headerShown: false }}>
+      <CartStack.Screen name="CategoryList" component={CategoryScreen} />
+      <CartStack.Screen name="CartDetail" component={CartScreen} />
+    </CartStack.Navigator>
+  );
+}
+
+// Footer navigation bar
 const Tab = createBottomTabNavigator();
 function MainTabs() {
   return (
@@ -68,7 +80,6 @@ function MainTabs() {
       <Tab.Screen name="AI" component={AIScreen} options={{ tabBarLabel: 'AI' }} />
       <Tab.Screen name="Budget" component={BudgetScreen} options={{ tabBarLabel: 'Budget' }} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
-
     </Tab.Navigator>
   );
 }

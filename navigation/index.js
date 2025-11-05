@@ -22,13 +22,6 @@ function AIScreen() {
     </View>
   );
 }
-function BudgetScreen() {
-  return (
-    <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
-      <Text>Budget Screen</Text>
-    </View>
-  );
-}
 function ShoppingScreen() { 
   return (
     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>

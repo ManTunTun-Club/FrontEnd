@@ -10,6 +10,7 @@ export default function ProfileStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="WalletScreen" component={WalletScreen} />
+      {/* 未來 Home 區內的其它畫面也掛在這 */}
     </Stack.Navigator>
   );
 }

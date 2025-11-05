@@ -38,17 +38,10 @@ function AIPlaceholder() {
     </View>
   )
 }
-function BudgetScreen() {
+function BudgetPlaceholder() {
   return (
     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
       <Text>Budget Screen</Text>
-    </View>
-  );
-}
-function ShoppingScreen() { 
-  return (
-    <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
-      <Text>Budget Placeholder</Text>
     </View>
   );
 }

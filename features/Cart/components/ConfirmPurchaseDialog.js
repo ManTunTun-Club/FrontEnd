@@ -13,7 +13,7 @@ import {
   Keyboard,
   ScrollView,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import  Ionicons from 'react-native-vector-icons/Ionicons';
 import PropTypes from 'prop-types';
 
 const palette = {

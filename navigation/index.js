@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -7,7 +8,7 @@ import { Image, StyleSheet } from 'react-native';
 // 子域 Stacks
 //import HomeStack from '../screens/Home/navigation/HomeStack';       // Home
 import ProfileStack from '../features/Profile/navigation/ProfileStack';
-//import BudgetStack from '../screens/Budget/navigation/BudgetStack'; // Budget
+import BudgetStack from '../features/Budget/navigation/BudgetStack'; // Budget
 //import AIStack from '../screens/AI/navigation/AIStack';             // AI
 import ShopStack from '../features/Shop/navigation/ShopStack'; // Shop (Cart & Category)
 
@@ -32,13 +33,13 @@ function AIPlaceholder() {
   )
 }
 
-function BudgetPlaceholder() {
-  return (
-    <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
-      <Text>Budget Placeholder</Text>
-    </View>
-  );
-}
+// function BudgetPlaceholder() {
+//   return (
+//     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
+//       <Text>Budget Placeholder</Text>
+//     </View>
+//   );
+// }
 
 function MainTabs() {
   return (
@@ -74,7 +75,7 @@ function MainTabs() {
       <Tab.Screen name="HomeTab" component={HomePlaceholder} options={{ tabBarLabel: 'Home' }} />
       <Tab.Screen name="ShopTab" component={ShopStack} options={{ tabBarLabel: 'Shop' }} />
       <Tab.Screen name="AITab" component={AIPlaceholder} options={{ tabBarLabel: 'AI' }} />
-      <Tab.Screen name="BudgetTab" component={BudgetPlaceholder} options={{ tabBarLabel: 'Budget' }} />
+      <Tab.Screen name="BudgetTab" component={BudgetStack} options={{ tabBarLabel: 'Budget' }} />
       <Tab.Screen name="ProfileTab" component={ProfileStack} options={{ tabBarLabel: 'Profile' }} />
     </Tab.Navigator>
   );

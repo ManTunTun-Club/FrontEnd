@@ -1,118 +1,183 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import Svg, { G, Path } from 'react-native-svg';
+// src/features/Budget/components/BudgetChart.js
 
-/**
- * data: [{ label, value, color }]  value = 整數或百分比數值
- * total: 總額（數字）
- * monthLabel: 例如 '8月'
- */
-export default function BudgetChart({ data, total = 0, monthLabel = '' }) {
-  const size = 260;                 // SVG 尺寸
-  const radius = 100;               // 圓半徑（軌跡）
-  const strokeWidth = 22;           // 圓環粗細
-  const gapDeg = 3;                 // 每個分段之間的角度間隙（越大間隙越明顯）
-  const cx = size / 2;
-  const cy = size / 2;
+import React, { useMemo, useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  FlatList,
+  useWindowDimensions,
+} from 'react-native';
+import Svg, { G, Path, Text as SvgText } from 'react-native-svg';
+import * as d3 from 'd3-shape';
+import { BUDGET_COLORS } from '../../../theme/theme-color';
 
-  const sum = data.reduce((s, d) => s + d.value, 0) || 1; // 避免除以0
-  const toRad = (deg) => (Math.PI * deg) / 180;
-  const polarToCartesian = (cx, cy, r, deg) => {
-    const rad = toRad(deg - 90);
-    return { x: cx + r * Math.cos(rad), y: cy + r * Math.sin(rad) };
-  };
+const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
-  // 產生單一弧線（使用 stroke + 圓角端點）
-  const Arc = ({ start, sweep, color }) => {
-    // 限制 0 sweep 不畫
-    if (sweep <= 0) return null;
+const DEFAULTS = {
+  thickness: 25,
+  emptyColor: '#E8E8E8',
+  palette: BUDGET_COLORS,
+};
 
-    // 使用大弧旗標
-    const largeArc = sweep > 180 ? 1 : 0;
-    const startPos = polarToCartesian(cx, cy, radius, start);
-    const endPos = polarToCartesian(cx, cy, radius, start + sweep);
+const BudgetChart = ({
+  items = [],
+  totalBudget = 0,
+  selectedMonth = '8月',
+  onMonthChange,
+  size: customSize,
+  thickness = DEFAULTS.thickness,
+}) => {
+  const { width: screenWidth } = useWindowDimensions();
+  const [modalVisible, setModalVisible] = useState(false);
 
-    const d = [
-      'M', startPos.x, startPos.y,
-      'A', radius, radius, 0, largeArc, 1, endPos.x, endPos.y,
-    ].join(' ');
+  // 維持 70% 螢幕寬度
+  const size = customSize || (screenWidth * 0.7);
 
-    return (
-      <Path
-        d={d}
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        fill="none"
-      />
-    );
-  };
+  const outerR = size / 2;
+  const innerR = outerR - thickness;
+  const labelRadius = outerR + 17;
 
-  // 依序畫出資料分段
-  let cursor = 0; // 角度起點（0度在正上方）
-  const arcs = data.map((d, i) => {
-    // 先扣掉間隙角度
-    const sweep = (d.value / sum) * 360 - gapDeg;
-    const start = cursor + gapDeg / 2;
-    cursor += (d.value / sum) * 360;
-    return <Arc key={i} start={start} sweep={Math.max(0, sweep)} color={d.color} />;
-  });
+  const chartData = useMemo(() => {
+    if (!items || items.length === 0 || totalBudget === 0) {
+      return [{ label: '空', value: 1, color: DEFAULTS.emptyColor, percentage: 0 }];
+    }
+    return items.map(item => ({
+      label: item.name,
+      value: item.amount,
+      color: item.color,
+      percentage: Math.round((item.amount / totalBudget) * 100),
+    }));
+  }, [items, totalBudget]);
+
+  const arcs = useMemo(() => {
+    const pieGen = d3.pie()
+        .value(d => d.value)
+        .sort(null)
+        .padAngle(0.05);
+    const arcGen = d3.arc()
+        .outerRadius(outerR)
+        .innerRadius(innerR)
+        .cornerRadius(thickness / 2);
+    const arcData = pieGen(chartData);
+    return arcData.map((d, i) => {
+      const [centroidX, centroidY] = d3.arc()
+          .outerRadius(labelRadius)
+          .innerRadius(labelRadius)
+          .centroid(d);
+      return {
+        key: i,
+        path: arcGen(d),
+        color: chartData[i].color,
+        percentage: chartData[i].percentage,
+        labelX: centroidX,
+        labelY: centroidY,
+        showLabel: chartData[i].percentage > 3,
+      };
+    });
+  }, [chartData, outerR, innerR, thickness, labelRadius]);
+  const wrapperSize = size + 150;
 
   return (
-    <View style={styles.wrap}>
-      <Svg width={size} height={size}>
-        <G>
-          {/* 背景灰環 */}
-          <Path
-            d={[
-              'M', cx, cy - radius,
-              'A', radius, radius, 0, 1, 1, cx - 0.01, cy - radius,
-            ].join(' ')}
-            stroke="#E9EEF5"
-            strokeWidth={strokeWidth}
-            fill="none"
-            strokeLinecap="round"
-          />
-          {arcs}
-        </G>
-      </Svg>
+    <View style={styles.container}>
+      <View style={[styles.chartWrapper, { width: wrapperSize, height: wrapperSize }]}>
+        <Svg width={wrapperSize} height={wrapperSize}> 
+          <G x={wrapperSize / 2} y={wrapperSize / 2}>
+            {arcs.map((a) => (
+              <Path key={a.key} d={a.path} fill={a.color} />
+            ))}
+            {arcs.map((a) => a.showLabel && (
+              <SvgText
+                key={`label-${a.key}`}
+                x={a.labelX}
+                y={a.labelY}
+                fill="#333"
+                fontSize="12"
+                fontWeight="bold"
+                textAnchor="middle"
+                alignmentBaseline="middle"
+              >
+                {`${a.percentage}%`}
+              </SvgText>
+            ))}
+          </G>
+        </Svg>
 
-      {/* 中央資訊 */}
-      <View style={styles.centerBox}>
-        <Text style={styles.centerLabel}>預算額度</Text>
-        {!!monthLabel && <Text style={styles.centerMonth}>{monthLabel} ▾</Text>}
-        <Text style={styles.centerAmount}>{`$${total.toLocaleString()}`}</Text>
+        <View style={styles.centerContent}>
+          <Text style={styles.centerLabel}>預算額度</Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.monthSelector}>
+            <Text style={styles.month}>{selectedMonth}</Text>
+            <Text style={styles.dropdown}>▼</Text>
+          </TouchableOpacity>
+          <Text style={[styles.amount, { fontSize: size * 0.13 }]}>
+            ${Number(totalBudget).toLocaleString()}
+          </Text>
+        </View>
       </View>
 
-      {/* 百分比文字（選擇性：若要在環外標示百分比，可在這裡加） */}
+      <Modal
+        transparent
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+        animationType="fade"
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          onPress={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            <FlatList
+              data={MONTHS}
+              keyExtractor={m => m}
+              numColumns={4}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={[styles.monthOption, selectedMonth === item && styles.monthOptionSelected]}
+                  onPress={() => {
+                    onMonthChange?.(item);
+                    setModalVisible(false);
+                  }}
+                >
+                  <Text style={[styles.monthOptionText, selectedMonth === item && styles.monthOptionTextSelected]}>
+                    {item}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  wrap: {
+  container: {
+    alignItems: 'center',
+    paddingTop: 0,
+    paddingBottom: 0,
+    backgroundColor: '#fff',
+    zIndex: 1, 
+  },
+  chartWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: -50,
   },
-  centerBox: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  centerLabel: {
-    color: '#94A3B8',
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  centerMonth: {
-    color: '#111827',
-    fontSize: 16,
-    fontWeight: '600',
-    marginBottom: 6,
-  },
-  centerAmount: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#111827',
-  },
+  centerContent: { position: 'absolute', alignItems: 'center' },
+  centerLabel: { fontSize: 14, color: '#999', marginBottom: 4 },
+  monthSelector: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  month: { fontSize: 18, fontWeight: '600', marginRight: 4, color: '#333' },
+  dropdown: { fontSize: 12, color: '#333' },
+  amount: { fontWeight: 'bold', color: '#000' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+  modalContent: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '80%' },
+  monthOption: { flex: 1, padding: 12, margin: 4, borderRadius: 8, backgroundColor: '#f5f5f5', alignItems: 'center' },
+  monthOptionSelected: { backgroundColor: '#4A90E2' },
+  monthOptionText: { color: '#333' },
+  monthOptionTextSelected: { color: '#fff' },
 });
+
+export default BudgetChart;

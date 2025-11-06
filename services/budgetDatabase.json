@@ -1,0 +1,22 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "name": "食物",
+      "amount": 7200,
+      "spent": 2880
+    },
+    {
+      "id": 2,
+      "name": "醫療",
+      "amount": 4000,
+      "spent": 480
+    },
+    {
+      "id": 3,
+      "name": "慢吞吞",
+      "amount": 14000,
+      "spent": 10000
+    }
+  ]
+}

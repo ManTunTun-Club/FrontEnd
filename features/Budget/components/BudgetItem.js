@@ -3,6 +3,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
+/**
+ * 將十六進位顏色轉為 RGBA
+ */
 const hexToRgba = (hex, alpha) => {
   if (!hex || !hex.startsWith('#') || hex.length < 7) {
     return `rgba(200,200,200,${alpha})`;
@@ -15,13 +18,18 @@ const hexToRgba = (hex, alpha) => {
 
 const BudgetItem = ({ item, height = 120 }) => {
   const color = item.color || '#E0E0E0';
-  const pct = Math.max(0, Math.min(100, Number(item.percentage) || 0));
-  const juiceHeight = (pct / 100) * height;
+  
+  // 直接使用父層傳來的「剩餘百分比」
+  const remainingPct = item.percentage || 0;
+
+  // 果汁高度直接對應剩餘百分比 (0% ~ 100%)
+  const juiceHeight = (remainingPct / 100) * height;
 
   return (
     <View style={[styles.itemCard, { height }]}>
-      {/* 背景：果汁底 */}
+      {/* 背景：淡色底 */}
       <View style={[styles.juiceBackground, { backgroundColor: hexToRgba(color, 0.15) }]}>
+        {/* 果汁填充：高度代表「剩餘預算」 */}
         <View style={[styles.juiceFill, { height: juiceHeight, backgroundColor: color }]} />
       </View>
 
@@ -34,17 +42,16 @@ const BudgetItem = ({ item, height = 120 }) => {
               {item.name || '未命名'}
             </Text>
           </View>
-          <Text style={styles.percentage}>{pct}%</Text>
+          {/* 顯示剩餘百分比 */}
+          <Text style={styles.percentage}>{remainingPct}%</Text>
         </View>
 
-        {/* 按鈕區：使用 Image */}
+        {/* 按鈕區 */}
         <View style={styles.buttonSection}>
           <TouchableOpacity style={styles.viewButton} onPress={() => console.log('View', item.name)}>
-             {/* 請確認你的圖片真的在 src/assets/eye.png */}
              <Image source={require('../../../assets/icons/eye.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.editButton} onPress={() => console.log('Edit', item.name)}>
-             {/* 請確認你的圖片真的在 src/assets/edit.png */}
              <Image source={require('../../../assets/icons/edit.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
         </View>
@@ -124,13 +131,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 6,
   },
-  // 設定 Icon 大小與顏色（如果你的圖是純黑白的 PNG，可以用 tintColor 染色）
   buttonIcon: {
     width: 24,
     height: 24,
     resizeMode: 'contain',
-    // 如果希望圖片跟著主題色變，可以加 tintColor，例如：
-    // tintColor: '#666',
   },
 });
 

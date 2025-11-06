@@ -1,6 +1,7 @@
-// src/feature/Budget/components/AddCategoryModal.js
+// src/features/Budget/components/AddCategoryModal.js
 
 import React, { useState, useEffect } from 'react';
+import { COLORS } from '../../../theme/theme-color';
 import {
   Modal,
   View,
@@ -12,24 +13,31 @@ import {
   Alert,
 } from 'react-native';
 
-//input must be number-only; any non-numeric characters will not be displayed.
-const digitsOnly = (s) => String(s ?? '').replace(/[^\d]/g, '');
+const keepOnlyDigits = (s) => String(s ?? '').replace(/[^\d]/g, '');
 
-const AddCategoryModal = ({ visible, onClose, onConfirm }) => {
+// 新增 editItem 參數，用來接收要編輯的物件
+const AddCategoryModal = ({ visible, onClose, onConfirm, editItem = null }) => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
 
-  // clear input box text
+  // 當彈窗打開時，判斷是「新增」還是「編輯」模式
   useEffect(() => {
     if (visible) {
-      setName('');
-      setAmount('');
+      if (editItem) {
+        // 編輯模式：帶入舊資料
+        setName(editItem.name);
+        setAmount(String(editItem.amount));
+      } else {
+        // 新增模式：清空欄位
+        setName('');
+        setAmount('');
+      }
     }
-  }, [visible]);
+  }, [visible, editItem]);
 
   const handleConfirm = () => {
     const cleanName = name.trim();
-    const cleanAmount = digitsOnly(amount);
+    const cleanAmount = keepOnlyDigits(amount);
 
     if (!cleanName) {
       Alert.alert('提醒', '請輸入類別名稱');
@@ -43,43 +51,44 @@ const AddCategoryModal = ({ visible, onClose, onConfirm }) => {
     onConfirm(cleanName, cleanAmount);
   };
 
+  // 判斷標題要顯示什麼
+  const title = editItem ? '編輯類別' : '新增類別';
+
   return (
     <Modal
-      transparent //make the background of the Modal transparent.
+      transparent
       visible={visible}
-      onRequestClose={onClose} //for Android 
-      animationType="fade"  //pop-up animation : fade in and fade out
+      onRequestClose={onClose}
+      animationType="fade"
     >
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+          <Text style={styles.modalTitle}>{title}</Text>
 
-      <Pressable style={styles.modalOverlay} onPress={onClose}> {/* Full-screen semi-transparent black background */}
-        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>  {/* Pop-up window body */}
-          <Text style={styles.modalTitle}>新增類別</Text>
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>類別名稱</Text>
             <TextInput
               style={styles.input}
               placeholder="輸入類別名稱"
-              placeholderTextColor="#ccc"
+              placeholderTextColor={COLORS.placeholder}
               value={name}
               onChangeText={setName}
               autoCapitalize="none"
             />
           </View>
 
-          {/* 預算金額 */}
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>預算金額</Text>
             <TextInput
               style={styles.input}
               placeholder="輸入預算金額"
-              placeholderTextColor="#ccc"
+              placeholderTextColor={COLORS.placeholder}
               value={amount}
-              onChangeText={(text) => setAmount(digitsOnly(text))}
+              onChangeText={(text) => setAmount(keepOnlyDigits(text))}
               keyboardType="number-pad"
             />
           </View>
 
-          {/* 按鈕列 */}
           <View style={styles.modalButtons}>
             <TouchableOpacity style={[styles.btn, styles.btnCancel]} onPress={onClose}>
               <Text style={styles.btnCancelText}>取消</Text>

@@ -15,22 +15,14 @@ import AddCategoryModal from '../components/AddCategoryModal';
 import { budgetApi } from '../../../services/budgetApi';
 import { BUDGET_COLORS } from '../../../theme/theme-color';
 
-/**
- * 依順序指派顏色，並計算「剩餘預算百分比」
- * @param {Array} categories - 原始分類資料
- */
 const assignColorsAndCalculatePercentage = (categories) =>
   categories.map((c, idx) => {
     const amount = Number(c.amount) || 0;
     const spent = Number(c.spent) || 0;
-    
-    // 計算剩餘百分比： ((總額 - 已花費) / 總額) * 100
     let remainingPct = 0;
     if (amount > 0) {
       remainingPct = Math.round(((amount - spent) / amount) * 100);
     }
-
-    // 確保百分比在 0 ~ 100 之間 (避免超支時變成負數，若需顯示超支可移除此行)
     remainingPct = Math.max(0, Math.min(100, remainingPct));
 
     return {
@@ -38,7 +30,7 @@ const assignColorsAndCalculatePercentage = (categories) =>
       name: c.name,
       amount,
       spent,
-      percentage: remainingPct, // 這裡儲存的是「剩餘百分比」
+      percentage: remainingPct,
       color: BUDGET_COLORS[idx % BUDGET_COLORS.length],
     };
   });
@@ -48,37 +40,30 @@ const BudgetScreen = () => {
   const [selectedMonth, setSelectedMonth] = useState('8月');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [showModal, setShowModal] = useState(false); // 改名為 showModal 比較通用
+  const [editingCategory, setEditingCategory] = useState(null); // 新增：記錄正在編輯的類別
 
   const loadBudgetData = useCallback(async (month) => {
     try {
       setLoading(true);
-      // 1. 同時撈取月份設定與分類列表
       const [monthData, categoriesRaw] = await Promise.all([
         budgetApi.getBudgetData(month),
         budgetApi.getCategories(),
       ]);
 
-      // 2. 計算總預算：優先使用所有分類的金額加總，確保資料一致性
       const totalFromItems = categoriesRaw.reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
       const finalTotalBudget = totalFromItems || monthData?.totalBudget || 0;
-
-      // 3. 計算每個項目的「剩餘百分比」並分配顏色
       const items = assignColorsAndCalculatePercentage(categoriesRaw);
 
-      setData({
-        totalBudget: finalTotalBudget,
-        items,
-      });
+      setData({ totalBudget: finalTotalBudget, items });
     } catch (e) {
-      console.error('載入預算資料失敗', e);
-      Alert.alert('錯誤', '載入失敗，請稍後再試。');
+      console.error('載入失敗', e);
+      Alert.alert('錯誤', '載入失敗');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // 當月份改變時重新載入資料
   useEffect(() => {
     loadBudgetData(selectedMonth);
   }, [selectedMonth, loadBudgetData]);
@@ -86,30 +71,49 @@ const BudgetScreen = () => {
   const currentItems = useMemo(() => data?.items || [], [data]);
   const totalBudget = data?.totalBudget ?? 0;
 
-  // 處理新增分類
-  const handleConfirmAddItem = useCallback(async (name, amountStr) => {
+  // 處理點擊「新增」按鈕
+  const handleAddItemClick = useCallback(() => {
+    setEditingCategory(null); // 清空編輯狀態，代表是新增
+    setShowModal(true);
+  }, []);
+
+  // 處理點擊「編輯 (筆)」按鈕
+  const handleEditItemClick = useCallback((item) => {
+    setEditingCategory(item); // 設定要編輯的物件
+    setShowModal(true);
+  }, []);
+
+  // 處理彈窗按下「確定」
+  const handleModalConfirm = useCallback(async (name, amountStr) => {
     const amountNum = parseInt(amountStr, 10);
     if (!name || isNaN(amountNum) || amountNum < 0) {
-      Alert.alert('提醒', '請輸入有效的名稱與金額');
+      Alert.alert('提醒', '資料無效');
       return;
     }
 
     try {
-      await budgetApi.addCategory({
-        name,
-        amount: amountNum,
-        spent: 0, // 新分類預設已花費為 0，所以剩餘百分比會是 100%
-      });
-      // 成功後關閉視窗並重新載入資料
-      setShowAddModal(false);
+      if (editingCategory) {
+        // 如果有編輯對象，呼叫更新 API
+        await budgetApi.updateCategory(editingCategory.id, {
+          name,
+          amount: amountNum,
+        });
+      } else {
+        // 如果沒有，呼叫新增 API
+        await budgetApi.addCategory({
+          name,
+          amount: amountNum,
+          spent: 0,
+        });
+      }
+      setShowModal(false);
       loadBudgetData(selectedMonth);
     } catch (e) {
-      console.error('新增分類失敗', e);
-      Alert.alert('錯誤', '新增失敗，請稍後再試。');
+      console.error('儲存失敗', e);
+      Alert.alert('錯誤', '儲存失敗，請稍後再試');
     }
-  }, [loadBudgetData, selectedMonth]);
+  }, [editingCategory, loadBudgetData, selectedMonth]);
 
-  // 首次載入時的 Loading 畫面
   if (loading && !data) {
     return (
       <SafeAreaView style={styles.loadingContainer}>
@@ -120,7 +124,6 @@ const BudgetScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 上方圓餅圖區域 */}
       <BudgetChart
         selectedMonth={selectedMonth}
         onMonthChange={setSelectedMonth}
@@ -128,35 +131,27 @@ const BudgetScreen = () => {
         items={currentItems}
       />
 
-      {/* 中間分頁切換 */}
       <BudgetTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      {/* 下方卡片列表區域 */}
       <BudgetCards
         items={currentItems}
-        onAddItem={() => setShowAddModal(true)}
+        onAddItem={handleAddItemClick}   // 改用新的 handler
+        onEditItem={handleEditItemClick} // 傳入編輯 handler
       />
 
-      {/* 新增分類彈窗 */}
       <AddCategoryModal
-        visible={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onConfirm={handleConfirmAddItem}
+        visible={showModal}
+        onClose={() => setShowModal(false)}
+        onConfirm={handleModalConfirm} // 改用新的通用 handler
+        editItem={editingCategory}     // 傳入要編輯的物件
       />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 });
 
 export default BudgetScreen;

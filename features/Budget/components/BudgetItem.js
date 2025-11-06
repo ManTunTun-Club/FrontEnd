@@ -2,10 +2,9 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+// 1. 引入 useNavigation hook
+import { useNavigation } from '@react-navigation/native';
 
-/**
- * 將十六進位顏色轉為 RGBA
- */
 const hexToRgba = (hex, alpha) => {
   if (!hex || !hex.startsWith('#') || hex.length < 7) {
     return `rgba(200,200,200,${alpha})`;
@@ -16,24 +15,20 @@ const hexToRgba = (hex, alpha) => {
   return `rgba(${r},${g},${b},${alpha})`;
 };
 
-const BudgetItem = ({ item, height = 120 }) => {
-  const color = item.color || '#E0E0E0';
-  
-  // 直接使用父層傳來的「剩餘百分比」
-  const remainingPct = item.percentage || 0;
+const BudgetItem = ({ item, height = 120, onEdit }) => {
+  // 2. 取得 navigation 物件
+  const navigation = useNavigation();
 
-  // 果汁高度直接對應剩餘百分比 (0% ~ 100%)
+  const color = item.color || '#E0E0E0';
+  const remainingPct = item.percentage || 0;
   const juiceHeight = (remainingPct / 100) * height;
 
   return (
     <View style={[styles.itemCard, { height }]}>
-      {/* 背景：淡色底 */}
       <View style={[styles.juiceBackground, { backgroundColor: hexToRgba(color, 0.15) }]}>
-        {/* 果汁填充：高度代表「剩餘預算」 */}
         <View style={[styles.juiceFill, { height: juiceHeight, backgroundColor: color }]} />
       </View>
 
-      {/* 內容層 */}
       <View style={styles.contentLayer}>
         <View style={styles.infoSection}>
           <View style={styles.leftInfo}>
@@ -42,16 +37,19 @@ const BudgetItem = ({ item, height = 120 }) => {
               {item.name || '未命名'}
             </Text>
           </View>
-          {/* 顯示剩餘百分比 */}
           <Text style={styles.percentage}>{remainingPct}%</Text>
         </View>
 
-        {/* 按鈕區 */}
         <View style={styles.buttonSection}>
-          <TouchableOpacity style={styles.viewButton} onPress={() => console.log('View', item.name)}>
+          {/* 3. 修改眼睛按鈕：導航到購物車頁面，並傳遞目前的分類資料 */}
+          <TouchableOpacity 
+            style={styles.viewButton} 
+            onPress={() => navigation.navigate('CategoryCart', { category: item })}
+          >
              <Image source={require('../../../assets/icons/eye.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.editButton} onPress={() => console.log('Edit', item.name)}>
+          
+          <TouchableOpacity style={styles.editButton} onPress={() => onEdit?.(item)}>
              <Image source={require('../../../assets/icons/edit.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
         </View>

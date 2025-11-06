@@ -1,42 +1,96 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets  } from 'react-native-safe-area-context';
 import {View, Text, StyleSheet, ScrollView} from 'react-native';
+
 import ActionTile from '../components/ActionTile';
 import StatCard from '../components/StatCard';
+import SettingItem from '../components/SettingItem-Button';
+import ProfileHeader from '../components/ProfileHeader';
+
+import notifyIcon from '../../../assets/icons/notify.png';
+import couponIcon from '../../../assets/icons/coupon.png';
+import orderHistoryIcon from '../../../assets/icons/order-history.png';
+
+import { useNavigation } from '@react-navigation/native';
+
 
 export default function ProfileScreen() {
-  // 後台資料
-  const walletTotal = 2000;
-  const mallTotal = 2000;
+  const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top','left','right']}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.avatar}/>
-        <Text style={styles.title}>名稱</Text>
-      </View>
+      <ProfileHeader
+        name="名稱"
+        // avatarSource={{ uri: '' }}  
+        onPressAvatar={() => navigation.navigate('WalletScreen')}
+        onPressName={() => navigation.navigate('WalletScreen')}
+      />
 
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={[
+        styles.container,
+        { paddingBottom: Math.max(8, insets.bottom) }
+        ]}
+      >
         {/* 點選區塊 */}
         <View style={styles.row}>
-          <ActionTile label="提醒" />
-          <ActionTile label="訂閱" />
-          <ActionTile label="訂單" />
+          <ActionTile
+            label="提醒"
+            icon={notifyIcon}
+            onPress={() => navigation.navigate('WalletScreen')}
+          />
+          <ActionTile
+            label="訂閱"
+            icon={couponIcon}
+            onPress={() => navigation.navigate('WalletScreen')}
+          />
+          <ActionTile
+            label="訂單"
+            icon={orderHistoryIcon}
+            onPress={() => navigation.navigate('WalletScreen')}
+          />
         </View>
 
-        {/* 錢包 */}
-        <Text style={styles.sectionTitle}>錢包</Text>
-        <StatCard title="錢包" amount={walletTotal} />
 
-        {/* 商城 */}
-        <Text style={[styles.sectionTitle, {marginTop: 18}]}>商城</Text>
-        <StatCard title="商城" amount={mallTotal}/>
+
+        {/* 折扣總計 */}
+        <StatCard
+          monthLabel="8月"
+          totalSaved={3090}
+          cashDiscount={2400}
+          pointsRebate={690}
+          onPressMonth={() => {
+            navigation.navigate('WalletScreen');
+          }}
+        />
 
         {/* 設定清單 */}
         <View style={styles.settingCard}>
-          <Text style={styles.settingLeft}>修改密碼</Text>
-          <Text style={styles.settingRight}>›</Text>
+          <SettingItem
+            label="修改密碼"
+            onPress={() => navigation.navigate('WalletScreen')}
+          />
+          <SettingItem
+            label="支付設定"
+            onPress={() => navigation.navigate('WalletScreen')}
+            showDivider={false}
+          />
+          <SettingItem
+            label=" 平台設定"
+            onPress={() => navigation.navigate('WalletScreen')}
+            showDivider={false}
+          />
+          <SettingItem
+            label="意見回饋"
+            onPress={() => navigation.navigate('WalletScreen')}
+            showDivider={false}
+          />
+          <SettingItem
+            label="登出"
+            onPress={() => navigation.navigate('WalletScreen')}
+            showDivider={false}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -44,20 +98,52 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: {flex: 1, backgroundColor: '#F6F8FA'},
-  container: {padding: 16, paddingBottom: 40},
+  safe: { flex: 1, backgroundColor: '#F6F8FA' },
+  container: { padding: 16},
   header: {
-    padding: 16, height: 72, flexDirection: 'row', alignItems: 'center',
-    borderBottomWidth: 1, borderBottomColor: '#E6EBF3',
+    padding: 16,
+    height: 72,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center', 
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#E6EBF3',
+    backgroundColor: '#fff',
   },
-  avatar: {width: 36, height: 36, borderRadius: 18, backgroundColor: '#111', marginRight: 10},
-  title: {fontSize: 20, fontWeight: '700', color: '#2A2F3A'},
-  row: {flexDirection: 'row', marginTop: 12},
-  sectionTitle: {marginTop: 16, marginBottom: 6, color: '#2A2F3A', fontSize: 16, fontWeight: '700'},
+  avatar: { 
+    width: 36, 
+    height: 36, 
+    borderRadius: 18, 
+    backgroundColor: '#111', 
+    marginRight: 10 
+  },
+  title: { 
+    fontSize: 20, 
+    fontWeight: '700', 
+    color: '#2A2F3A' 
+  },
+
+  row: { 
+    flexDirection: 'row', 
+    marginTop: 12, 
+    gap: 12, 
+    justifyContent: 'space-between' 
+  },
+
+  sectionTitle: { 
+    marginTop: 16, 
+    marginBottom: 6, 
+    color: '#2A2F3A', 
+    fontSize: 16, 
+    fontWeight: '700' 
+  },
+
   settingCard: {
-    backgroundColor: 'white', borderRadius: 14, height: 120, marginTop: 18, padding: 16,
-    borderWidth: 1, borderColor: '#E6EBF3', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start',
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    marginTop: 18,
+    borderWidth: 1,
+    borderColor: '#E6EBF3',
+    overflow: 'hidden',
   },
-  settingLeft: {fontSize: 16, color: '#2A2F3A', fontWeight: '600'},
-  settingRight: {fontSize: 28, color: '#7F8CA3', marginTop: -6},
 });

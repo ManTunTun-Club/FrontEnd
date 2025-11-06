@@ -10,6 +10,7 @@ import ProfileStack from '../features/Profile/navigation/ProfileStack';
 //import BudgetStack from '../screens/Budget/navigation/BudgetStack'; // Budget
 //import AIStack from '../screens/AI/navigation/AIStack';             // AI
 import ShopStack from '../features/Shop/navigation/ShopStack'; // Shop (Cart & Category)
+
 import { View, Text } from 'react-native';
 
 const Tab = createBottomTabNavigator();

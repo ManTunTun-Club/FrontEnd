@@ -1,4 +1,4 @@
-// src/features/Budget/navigation/BudgetStacks.js //
+// src/features/Budget/navigation/BudgetStacks.js 
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import BudgetScreen from '../screens/BudgetScreen';

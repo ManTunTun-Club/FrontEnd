@@ -1,12 +1,14 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-const AddItemButton = ({ onPress }) => {
+const AddItemButton = ({ onPress, height = 120 }) => {
   return (
     <TouchableOpacity
-      style={styles.addButton}
+      style={[styles.addButton, { height }]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel="新增類別"
     >
       <Text style={styles.addButtonText}>+</Text>
       <Text style={styles.addButtonLabel}>新增類別</Text>
@@ -25,14 +27,15 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 180,
     paddingVertical: 20,
+    // height 由 props 傳入覆寫
   },
   addButtonText: {
     fontSize: 48,
     fontWeight: '300',
     color: '#bbb',
     marginBottom: 8,
+    lineHeight: 56, // 微調垂直置中
   },
   addButtonLabel: {
     fontSize: 14,

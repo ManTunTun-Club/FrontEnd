@@ -1,68 +1,52 @@
+// src/features/Budget/components/BudgetItem.js
+
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 
-const CATEGORIES = {
-  food: { label: '食物', color: '#FFE66D', icon: '🍔' },
-  shopping: { label: '購物', color: '#4A90E2', icon: '🛍️' },
-  medical: { label: '醫療', color: '#FF9A56', icon: '⚕️' },
-  lifestyle: { label: '生活用品', color: '#52C77F', icon: '🛁' },
-  clothing: { label: '衣服', color: '#E8E8E8', icon: '👕' },
-};
-
-// 將 hex 轉換為 rgba
 const hexToRgba = (hex, alpha) => {
+  if (!hex || !hex.startsWith('#') || hex.length < 7) {
+    return `rgba(200,200,200,${alpha})`;
+  }
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
   const b = parseInt(hex.slice(5, 7), 16);
   return `rgba(${r},${g},${b},${alpha})`;
 };
 
-const BudgetItem = ({ item }) => {
-  const category = CATEGORIES[item.category] || {
-    label: item.category,
-    color: '#999',
-    icon: '📋'
-  };
+const BudgetItem = ({ item, height = 120 }) => {
+  const color = item.color || '#E0E0E0';
+  const pct = Math.max(0, Math.min(100, Number(item.percentage) || 0));
+  const juiceHeight = (pct / 100) * height;
 
   return (
-    <View style={styles.container}>
-      {/* 上方彩色區域 */}
-      <View style={[styles.itemHeader, { backgroundColor: category.color }]}>
-        <Text style={styles.itemIcon}>{category.icon}</Text>
-        <TouchableOpacity style={styles.editButton}>
-          <Text style={styles.editIcon}>✏️</Text>
-        </TouchableOpacity>
+    <View style={[styles.itemCard, { height }]}>
+      {/* 背景：果汁底 */}
+      <View style={[styles.juiceBackground, { backgroundColor: hexToRgba(color, 0.15) }]}>
+        <View style={[styles.juiceFill, { height: juiceHeight, backgroundColor: color }]} />
       </View>
 
-      {/* 下方資訊區域 */}
-      <View style={styles.itemInfo}>
-        <View style={styles.infoRow}>
-          <Text style={styles.categoryName}>{category.label}</Text>
-          <Text style={styles.percentage}>{item.percentage}%</Text>
+      {/* 內容層 */}
+      <View style={styles.contentLayer}>
+        <View style={styles.infoSection}>
+          <View style={styles.leftInfo}>
+            <Text style={styles.amount}>${Number(item.amount || 0).toLocaleString()}</Text>
+            <Text style={styles.categoryName} numberOfLines={1}>
+              {item.name || '未命名'}
+            </Text>
+          </View>
+          <Text style={styles.percentage}>{pct}%</Text>
         </View>
 
-        <Text style={styles.amount}>${item.amount.toLocaleString()}</Text>
-
-        {/* 喝飲料杯效果進度條 - 從下到上填充 */}
-        <View style={styles.juiceContainer}>
-          {/* 灰色背景（未使用部分） */}
-          <View
-            style={[
-              styles.juiceBackground,
-              { backgroundColor: hexToRgba(category.color, 0.2) }
-            ]}
-          />
-          
-          {/* 彩色液體（已使用部分） - 絕對定位在底部 */}
-          <View
-            style={[
-              styles.juiceFill,
-              {
-                backgroundColor: category.color,
-                height: `${item.percentage}%`,
-              }
-            ]}
-          />
+        {/* 按鈕區：使用 Image */}
+        <View style={styles.buttonSection}>
+          <TouchableOpacity style={styles.viewButton} onPress={() => console.log('View', item.name)}>
+             {/* 請確認你的圖片真的在 src/assets/eye.png */}
+             <Image source={require('../../../assets/icons/eye.png')} style={styles.buttonIcon} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.editButton} onPress={() => console.log('Edit', item.name)}>
+             {/* 請確認你的圖片真的在 src/assets/edit.png */}
+             <Image source={require('../../../assets/icons/edit.png')} style={styles.buttonIcon} />
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -70,7 +54,7 @@ const BudgetItem = ({ item }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  itemCard: {
     borderRadius: 12,
     overflow: 'hidden',
     marginBottom: 16,
@@ -80,191 +64,74 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
+    position: 'relative',
   },
-  itemHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  juiceBackground: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    justifyContent: 'flex-end',
+  },
+  juiceFill: {
+    width: '100%',
+  },
+  contentLayer: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    padding: 12,
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    zIndex: 10,
   },
-  itemIcon: {
-    fontSize: 24,
-  },
-  editButton: {
-    padding: 8,
-  },
-  editIcon: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  itemInfo: {
-    backgroundColor: '#f9f9f9',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-  },
-  infoRow: {
+  infoSection: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
   },
-  categoryName: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
-  },
-  percentage: {
-    fontSize: 12,
-    color: '#999',
+  leftInfo: {
+    flex: 1,
+    marginRight: 8,
   },
   amount: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 2,
+  },
+  categoryName: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '600',
+    marginTop: 4,
+  },
+  percentage: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 8,
   },
-
-  // 喝飲料杯效果進度條
-  juiceContainer: {
-    height: 100, // 增加高度讓效果明顯
-    backgroundColor: '#E8E8E8', // 灰色底色
-    borderRadius: 4,
-    overflow: 'hidden',
-    flexDirection: 'column-reverse', // 從下往上排列
-    position: 'relative',
-    marginTop: 8,
+  buttonSection: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  juiceBackground: {
+  viewButton: {
     flex: 1,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    paddingVertical: 6,
   },
-  juiceFill: {
-    borderRadius: 4,
-    // height 會動態設定為 percentage%
+  editButton: {
+    flex: 1,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    paddingVertical: 6,
+  },
+  // 設定 Icon 大小與顏色（如果你的圖是純黑白的 PNG，可以用 tintColor 染色）
+  buttonIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: 'contain',
+    // 如果希望圖片跟著主題色變，可以加 tintColor，例如：
+    // tintColor: '#666',
   },
 });
 
 export default BudgetItem;
-
-
-
-
-// import React from 'react';
-// import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-
-// const CATEGORIES = {
-//   food: { label: '食物', color: '#FFE66D', icon: '🍔' },
-//   shopping: { label: '購物', color: '#4A90E2', icon: '🛍️' },
-//   medical: { label: '醫療', color: '#FF9A56', icon: '⚕️' },
-//   lifestyle: { label: '生活用品', color: '#52C77F', icon: '🛁' },
-//   clothing: { label: '衣服', color: '#E8E8E8', icon: '👕' },
-// };
-
-// const hexToRgba = (hex, alpha) => {
-//   const r = parseInt(hex.slice(1, 3), 16);
-//   const g = parseInt(hex.slice(3, 5), 16);
-//   const b = parseInt(hex.slice(5, 7), 16);
-//   return `rgba(${r},${g},${b},${alpha})`;
-// };
-
-// const BudgetItem = ({ item }) => {
-//   const category = CATEGORIES[item.category];
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={[styles.header, { backgroundColor: category.color }]}>
-//         <Text style={styles.icon}>{category.icon}</Text>
-//         <TouchableOpacity style={styles.editButton}>
-//           <Text style={styles.editIcon}>✏️</Text>
-//         </TouchableOpacity>
-//       </View>
-//       <View style={styles.content}>
-//         <View style={styles.infoRow}>
-//           <Text style={styles.category}>{category.label}</Text>
-//           <Text style={styles.percentage}>{item.percentage}%</Text>
-//         </View>
-//         <View style={styles.amountRow}>
-//           <Text style={styles.amount}>${item.amount.toLocaleString()}</Text>
-//         </View>
-//         <View style={[styles.progressBar, { backgroundColor: hexToRgba(category.color, 0.3) }]}>
-//           <View
-//             style={[
-//               styles.progressFill,
-//               {
-//                 width: `${item.percentage}%`,
-//                 backgroundColor: category.color,
-//               },
-//             ]}
-//           />
-//         </View>
-//       </View>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     borderRadius: 12,
-//     overflow: 'hidden',
-//     marginBottom: 16,
-//     backgroundColor: '#fff',
-//   },
-//   header: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     justifyContent: 'space-between',
-//     paddingHorizontal: 16,
-//     paddingVertical: 12,
-//     borderRadius: 12,
-//   },
-//   icon: {
-//     fontSize: 24,
-//   },
-//   editButton: {
-//     padding: 8,
-//   },
-//   editIcon: {
-//     fontSize: 18,
-//     color: '#fff',
-//   },
-//   content: {
-//     backgroundColor: '#f9f9f9',
-//     paddingHorizontal: 12,
-//     paddingVertical: 12,
-//   },
-//   infoRow: {
-//     flexDirection: 'row',
-//     justifyContent: 'space-between',
-//     alignItems: 'center',
-//     marginBottom: 4,
-//   },
-//   category: {
-//     fontSize: 12,
-//     color: '#666',
-//     fontWeight: '500',
-//   },
-//   percentage: {
-//     fontSize: 12,
-//     color: '#999',
-//   },
-//   amountRow: {
-//     marginBottom: 8,
-//   },
-//   amount: {
-//     fontSize: 14,
-//     fontWeight: 'bold',
-//     color: '#000',
-//   },
-//   progressBar: {
-//     height: 4,
-//     borderRadius: 2,
-//     overflow: 'hidden',
-//   },
-//   progressFill: {
-//     height: '100%',
-//     borderRadius: 2,
-//   },
-// });
-
-// export default BudgetItem;
-

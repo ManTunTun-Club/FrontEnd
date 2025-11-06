@@ -18,29 +18,5 @@
       "amount": 14000,
       "spent": 10000
     }
-    
-  ],
-  "months": {
-    "8月": {
-      "totalBudget": 20000,
-      "chartData": [
-        {
-          "remaining": 90,
-          "icon": "🛁"
-        },
-        {
-          "remaining": 12,
-          "icon": "⚕️"
-        },
-        {
-          "remaining": 36,
-          "icon": "🛍️"
-        },
-        {
-          "remaining": 15,
-          "icon": "🍔"
-        }
-      ]
-    }
-  }
+  ]
 }

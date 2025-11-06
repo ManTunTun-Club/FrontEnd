@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-// 1. 引入 useNavigation hook
 import { useNavigation } from '@react-navigation/native';
 
 const hexToRgba = (hex, alpha) => {
@@ -16,7 +15,6 @@ const hexToRgba = (hex, alpha) => {
 };
 
 const BudgetItem = ({ item, height = 120, onEdit }) => {
-  // 2. 取得 navigation 物件
   const navigation = useNavigation();
 
   const color = item.color || '#E0E0E0';
@@ -41,7 +39,6 @@ const BudgetItem = ({ item, height = 120, onEdit }) => {
         </View>
 
         <View style={styles.buttonSection}>
-          {/* 3. 修改眼睛按鈕：導航到購物車頁面，並傳遞目前的分類資料 */}
           <TouchableOpacity 
             style={styles.viewButton} 
             onPress={() => navigation.navigate('CategoryCart', { category: item })}

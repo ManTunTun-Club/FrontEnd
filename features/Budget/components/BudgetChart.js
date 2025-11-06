@@ -38,8 +38,7 @@ const BudgetChart = ({
 
   const outerR = size / 2;
   const innerR = outerR - thickness;
-  // 修改 1：把標籤往內拉近一點 (原本是 +30，改成 +20)，避免超出邊界
-  const labelRadius = outerR + 20;
+  const labelRadius = outerR + 17;
 
   const chartData = useMemo(() => {
     if (!items || items.length === 0 || totalBudget === 0) {
@@ -79,8 +78,6 @@ const BudgetChart = ({
       };
     });
   }, [chartData, outerR, innerR, thickness, labelRadius]);
-
-  // 容器大小維持 +150，確保空間足夠
   const wrapperSize = size + 150;
 
   return (

@@ -10,7 +10,6 @@ import {
 import BudgetItem from './BudgetItem';
 import AddItemButton from './AddItemButton';
 
-// 新增 onEditItem prop
 const BudgetCards = ({ items = [], onAddItem, onEditItem }) => {
   const { width } = Dimensions.get('window');
   const cardWidth = (width - 30 - 12) / 2;

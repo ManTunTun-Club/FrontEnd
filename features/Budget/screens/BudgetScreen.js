@@ -40,8 +40,8 @@ const BudgetScreen = () => {
   const [selectedMonth, setSelectedMonth] = useState('8月');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false); // 改名為 showModal 比較通用
-  const [editingCategory, setEditingCategory] = useState(null); // 新增：記錄正在編輯的類別
+  const [showModal, setShowModal] = useState(false); 
+  const [editingCategory, setEditingCategory] = useState(null); 
 
   const loadBudgetData = useCallback(async (month) => {
     try {
@@ -71,19 +71,18 @@ const BudgetScreen = () => {
   const currentItems = useMemo(() => data?.items || [], [data]);
   const totalBudget = data?.totalBudget ?? 0;
 
-  // 處理點擊「新增」按鈕
+
   const handleAddItemClick = useCallback(() => {
-    setEditingCategory(null); // 清空編輯狀態，代表是新增
+    setEditingCategory(null); // 清空編輯狀態
     setShowModal(true);
   }, []);
 
-  // 處理點擊「編輯 (筆)」按鈕
   const handleEditItemClick = useCallback((item) => {
     setEditingCategory(item); // 設定要編輯的物件
     setShowModal(true);
   }, []);
 
-  // 處理彈窗按下「確定」
+  // 按下「確定」
   const handleModalConfirm = useCallback(async (name, amountStr) => {
     const amountNum = parseInt(amountStr, 10);
     if (!name || isNaN(amountNum) || amountNum < 0) {
@@ -135,15 +134,15 @@ const BudgetScreen = () => {
 
       <BudgetCards
         items={currentItems}
-        onAddItem={handleAddItemClick}   // 改用新的 handler
-        onEditItem={handleEditItemClick} // 傳入編輯 handler
+        onAddItem={handleAddItemClick}   
+        onEditItem={handleEditItemClick} 
       />
 
       <AddCategoryModal
         visible={showModal}
         onClose={() => setShowModal(false)}
-        onConfirm={handleModalConfirm} // 改用新的通用 handler
-        editItem={editingCategory}     // 傳入要編輯的物件
+        onConfirm={handleModalConfirm} 
+        editItem={editingCategory}     
       />
     </SafeAreaView>
   );

@@ -1,10 +1,8 @@
 // src/services/budgetApi.js
 
-// ... (前面的模擬延遲 helper)
 
 // 模擬資料庫
 let localData = {
-  // ... (categories 和 months 維持不變)
   categories: [
     { id: 1, name: "食物", amount: 7200, spent: 2880 },
     { id: 2, name: "醫療", amount: 4000, spent: 480 },
@@ -41,10 +39,9 @@ let localData = {
 };
 
 export const budgetApi = {
-  // ... (既有的 getCategories, getBudgetData, addCategory 等維持不變)
   getCategories: () => new Promise((resolve) => setTimeout(() => resolve([...localData.categories]), 300)),
   getBudgetData: (month) => new Promise((resolve) => setTimeout(() => resolve(localData.months[month]), 300)),
-  addCategory: (category) => { /* ...略... */ return Promise.resolve() }, // 僅示意，請保留你原本完整的實作
+  addCategory: (category) => { /* ...略... */ return Promise.resolve() }, 
   updateCategory: (id, updates) => { /* ...略... */ return Promise.resolve() },
 
   /**

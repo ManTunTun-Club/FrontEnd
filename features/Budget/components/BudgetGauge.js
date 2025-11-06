@@ -36,20 +36,20 @@ const BudgetGauge = ({
     .outerRadius(radius)
     .startAngle(startAngle);
 
-  // 1. 背景軌道 (灰色，永遠是滿的 100%)
+  // 背景軌道 (灰色，永遠是滿的 100%)
   const backgroundArcPath = arcGen({ endAngle: endAngle });
 
-  // 計算進度比例 (限制最大為 1，避免爆表)
+  // 計算進度比例 (限制最大為 1)
   const totalCart = spent + planned;
   const spentRatio = Math.min(1, totalBudget > 0 ? spent / totalBudget : 0);
   const cartRatio = Math.min(1, totalBudget > 0 ? totalCart / totalBudget : 0);
 
-  // 2. 購物車總額軌道 (淺色，包含已買+預計)
+  // 購物車總額軌道 (淺色，包含已買+預計)
   // 角度 = 起始角 + (總角度範圍 * 比例)
   const cartEndAngle = startAngle + (Math.PI * cartRatio);
   const cartArcPath = arcGen({ endAngle: cartEndAngle });
 
-  // 3. 已購買軌道 (深色，疊在淺色上面)
+  // 已購買軌道 (深色，疊在淺色上面)
   const spentEndAngle = startAngle + (Math.PI * spentRatio);
   const spentArcPath = arcGen({ endAngle: spentEndAngle });
 
@@ -79,8 +79,8 @@ const BudgetGauge = ({
       </View>
 
       {/* 左右百分比標籤 */}
-      <Text style={[styles.percentLabel, styles.leftLabel]}>100%</Text>
-      <Text style={[styles.percentLabel, styles.rightLabel]}>0%</Text>
+      <Text style={[styles.percentLabel, styles.leftLabel]}>0%</Text>
+      <Text style={[styles.percentLabel, styles.rightLabel]}>100%</Text>
     </View>
   );
 };
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    paddingBottom: 20, // 調整文字離底部的距離
+    paddingBottom: 20, // 文字離底部的距離
   },
   monthRow: {
     flexDirection: 'row',

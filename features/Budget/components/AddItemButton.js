@@ -28,14 +28,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 20,
-    // height 由 props 傳入覆寫
   },
   addButtonText: {
     fontSize: 48,
     fontWeight: '300',
     color: '#bbb',
     marginBottom: 8,
-    lineHeight: 56, // 微調垂直置中
+    lineHeight: 56,
   },
   addButtonLabel: {
     fontSize: 14,

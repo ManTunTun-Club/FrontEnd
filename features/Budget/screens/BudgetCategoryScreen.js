@@ -9,22 +9,22 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Image, // 記得引入 Image
+  Image, 
 } from 'react-native';
 import BudgetGauge from '../components/BudgetGauge';
 import { budgetApi } from '../../../services/budgetApi';
 
-// 單一商品卡片元件
+
 const CartItemCard = ({ item, color }) => {
   const isPurchased = item.status === 'purchased';
-  // 根據狀態決定狀態標籤的顏色
-  const statusColor = isPurchased ? color : hexToRgba(color, 0.5); // 這裡需要用到 hexToRgba，可以直接複製過來或寫成共用 utils
+
+  const statusColor = isPurchased ? color : hexToRgba(color, 0.5); 
 
   return (
     <View style={styles.card}>
-      {/* 商品圖片 (這裡先用色塊代替，請換成真實 Image 元件) */}
+      
       <View style={[styles.productImage, { backgroundColor: '#eee' }]}>
-          {/* <Image source={{ uri: item.image }} style={styles.realImage} /> */}
+    
           <Text style={{color: '#999'}}>商品圖</Text>
       </View>
 
@@ -92,7 +92,6 @@ const BudgetCategoryScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 自訂導航列 (如果你的 Stack Navigator 已經有 header，可以移除這塊) */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Text style={styles.backText}>←</Text>
@@ -131,7 +130,6 @@ const BudgetCategoryScreen = ({ route, navigation }) => {
   );
 };
 
-// 簡單的 hexToRgba 工具 (為了 CartItemCard 使用)
 const hexToRgba = (hex, alpha = 1) => {
     if (!hex || !hex.startsWith('#') || hex.length < 7) return hex;
     const r = parseInt(hex.slice(1, 3), 16);
@@ -167,7 +165,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: 'hidden',
     flexDirection: 'row',
-    flexWrap: 'wrap', // 讓 footer 可以換行到下面
+    flexWrap: 'wrap', 
   },
   productImage: {
     width: 100,

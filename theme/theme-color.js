@@ -4,6 +4,12 @@ export const COLORS = {
   // 主色
   primary: '#5DA3FF',
   onPrimary: '#FFFFFF',
+  text: '#333333',       // 一般文字
+  textLight: '#666666',  // 次要文字
+  placeholder: '#CCCCCC',// 輸入框提示文字 
+  border: '#DDDDDD',     // 邊框顏色
+  background: '#FFFFFF', // 背景色
+  error: '#FF3B30',      // 錯誤提示色
   
 };
 

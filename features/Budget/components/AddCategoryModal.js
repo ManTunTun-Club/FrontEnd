@@ -1,3 +1,5 @@
+// src/feature/Budget/components/AddCategoryModal.js
+
 import React, { useState, useEffect } from 'react';
 import {
   Modal,
@@ -10,14 +12,14 @@ import {
   Alert,
 } from 'react-native';
 
-/** 僅保留數字字元 */
+//input must be number-only; any non-numeric characters will not be displayed.
 const digitsOnly = (s) => String(s ?? '').replace(/[^\d]/g, '');
 
 const AddCategoryModal = ({ visible, onClose, onConfirm }) => {
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
 
-  // 當 Modal 打開時，清空欄位 (Optional，看你習慣)
+  // clear input box text
   useEffect(() => {
     if (visible) {
       setName('');
@@ -38,24 +40,20 @@ const AddCategoryModal = ({ visible, onClose, onConfirm }) => {
       return;
     }
 
-    // 將驗證過的資料傳回父層，父層負責呼叫 API
     onConfirm(cleanName, cleanAmount);
   };
 
   return (
     <Modal
-      transparent
+      transparent //make the background of the Modal transparent.
       visible={visible}
-      onRequestClose={onClose}
-      animationType="fade"
+      onRequestClose={onClose} //for Android 
+      animationType="fade"  //pop-up animation : fade in and fade out
     >
-      {/* 點擊背景關閉 */}
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        {/* 阻擋點擊事件冒泡到背景 */}
-        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
-          <Text style={styles.modalTitle}>新增類別</Text>
 
-          {/* 類別名稱 */}
+      <Pressable style={styles.modalOverlay} onPress={onClose}> {/* Full-screen semi-transparent black background */}
+        <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>  {/* Pop-up window body */}
+          <Text style={styles.modalTitle}>新增類別</Text>
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>類別名稱</Text>
             <TextInput

@@ -61,11 +61,6 @@ export default BudgetTabs;
 
 
 
-
-
-// // ============================================
-// // 文件：src/features/Budget/components/BudgetTabs.js
-// // ============================================
 // import React from 'react';
 // import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
@@ -100,25 +95,32 @@ export default BudgetTabs;
 //     paddingHorizontal: 20,
 //     backgroundColor: '#fff',
 //     borderBottomWidth: 1,
-//     borderBottomColor: '#f0f0f0'
+//     borderBottomColor: '#f0f0f0',
 //   },
 //   tab: {
 //     flex: 1,
 //     paddingVertical: 8,
-//     alignItems: 'center'
+//     alignItems: 'center',
 //   },
 //   activeTab: {
 //     borderBottomWidth: 3,
-//     borderBottomColor: '#4A90E2'
+//     borderBottomColor: '#4A90E2',
 //   },
 //   tabText: {
 //     fontSize: 16,
 //     color: '#999',
-//     fontWeight: '500'
+//     fontWeight: '500',
 //   },
 //   activeTabText: {
-//     color: '#000'
-//   }
+//     color: '#000',
+//   },
 // });
 
 // export default BudgetTabs;
+
+
+
+
+
+
+

@@ -1,22 +1,47 @@
 {
-  "categories": [
+  "categoriesCatalog": [
+    { "id": 1, "name": "食物" },
+    { "id": 2, "name": "醫療" },
+    { "id": 3, "name": "慢吞吞" },
+    { "id": 4, "name": "娛樂" }
+  ],
+  "monthlyBudgets": [
     {
-      "id": 1,
-      "name": "食物",
-      "amount": 7200,
-      "spent": 2880
+      "month": "8月",
+      "categories": [
+        { "categoryId": 1, "amount": 7200 },
+        { "categoryId": 2, "amount": 4000 },
+        { "categoryId": 3, "amount": 14000 }
+      ]
     },
     {
-      "id": 2,
-      "name": "醫療",
-      "amount": 4000,
-      "spent": 480
+      "month": "9月",
+      "categories": [
+        { "categoryId": 1, "amount": 6800 },
+        { "categoryId": 3, "amount": 12000 },
+        { "categoryId": 4, "amount": 3000 }
+      ]
     },
     {
-      "id": 3,
-      "name": "慢吞吞",
-      "amount": 14000,
-      "spent": 10000
+      "month": "10月",
+      "categories": [
+        { "categoryId": 1, "amount": 7000 },
+        { "categoryId": 2, "amount": 3500 },
+        { "categoryId": 4, "amount": 5000 }
+      ]
     }
+  ],
+  "expenses": [
+    { "id": "e-1001", "title": "粉紅佳人蘋果", "price": 125,  "categoryId": 1, "source": "Carrefour", "paymentMethod": "家樂福聯名卡", "status": "purchased", "date": "2025-08-05" },
+    { "id": "e-1002", "title": "衛生紙 24 捲", "price": 250,  "categoryId": 1, "source": "家樂福",     "paymentMethod": "現金",         "status": "planned",   "date": "2025-08-10" },
+    { "id": "e-1003", "title": "止痛藥",       "price": 120,  "categoryId": 2, "source": "小林藥局",   "paymentMethod": "信用卡",       "status": "purchased", "date": "2025-08-12" },
+
+    { "id": "e-2001", "title": "耳機",         "price": 1290, "categoryId": 4, "source": "PChome",     "paymentMethod": "信用卡",       "status": "purchased", "date": "2025-09-08" },
+    { "id": "e-2002", "title": "拿鐵咖啡",     "price": 85,   "categoryId": 3, "source": "星巴克",     "paymentMethod": "行動支付",     "status": "purchased", "date": "2025-09-03" },
+    { "id": "e-2003", "title": "濾掛咖啡補貨", "price": 360,  "categoryId": 3, "source": "全聯",       "paymentMethod": "信用卡",       "status": "planned",   "date": "2025-09-15" },
+
+    { "id": "e-3001", "title": "健保掛號費",   "price": 150,  "categoryId": 2, "source": "聯合診所",   "paymentMethod": "現金",         "status": "purchased", "date": "2025-10-02" },
+    { "id": "e-3002", "title": "晚餐便當",     "price": 95,   "categoryId": 1, "source": "便當店",     "paymentMethod": "現金",         "status": "purchased", "date": "2025-10-05" },
+    { "id": "e-3003", "title": "Switch 遊戲",  "price": 1490, "categoryId": 4, "source": "蝦皮",       "paymentMethod": "信用卡",       "status": "planned",   "date": "2025-10-10" }
   ]
 }

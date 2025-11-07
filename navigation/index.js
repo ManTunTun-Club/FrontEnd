@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Image, StyleSheet } from 'react-native';
 
 // 子域 Stacks
-//import HomeStack from '../screens/Home/navigation/HomeStack';       // Home
+import HomeStack from '../features/Home/navigation/HomeStack';       // Home
 import ProfileStack from '../features/Profile/navigation/ProfileStack';
 import BudgetStack from '../features/Budget/navigation/BudgetStack'; // Budget
 //import AIStack from '../screens/AI/navigation/AIStack';             // AI
@@ -14,14 +14,6 @@ import { View, Text } from 'react-native';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-
-function HomePlaceholder() {
-  return (
-    <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
-      <Text>Home Placeholder</Text>
-    </View>
-  )
-}
 
 function AIPlaceholder() {
   return (
@@ -62,7 +54,7 @@ function MainTabs() {
       })}
     >
       {/* 改component={}裡的內容 */}
-      <Tab.Screen name="HomeTab" component={HomePlaceholder} options={{ tabBarLabel: 'Home' }} />
+      <Tab.Screen name="HomeTab" component={ HomeStack } options={{ tabBarLabel: 'Home' }} />
       <Tab.Screen name="ShopTab" component={ShopStack} options={{ tabBarLabel: 'Shop' }} />
       <Tab.Screen name="AITab" component={AIPlaceholder} options={{ tabBarLabel: 'AI' }} />
       <Tab.Screen name="BudgetTab" component={BudgetStack} options={{ tabBarLabel: 'Budget' }} />

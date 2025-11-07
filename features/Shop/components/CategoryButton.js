@@ -43,7 +43,7 @@ const CategoryButton = ({ category, onPress, style }) => {
       case 'med':
         return <Ionicons name="heart" {...iconProps} />;
       default:
-        return <Ionicons name="help" {...iconProps} />;
+        return <Ionicons name="bag" {...iconProps} />;
     }
   };
 

@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
+  Text,
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
@@ -119,7 +120,6 @@ const BudgetScreen = () => {
       </SafeAreaView>
     );
   }
-
   return (
     <SafeAreaView style={styles.container}>
       <BudgetChart
@@ -131,11 +131,20 @@ const BudgetScreen = () => {
 
       <BudgetTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <BudgetCards
-        items={currentItems}
-        onAddItem={handleAddItemClick}
-        onEditItem={handleEditItemClick}
-      />
+      {/* --- START: 條件渲染 --- */}
+      {activeTab === 'budget' ? (
+        <BudgetCards
+          items={currentItems}
+          onAddItem={handleAddItemClick}
+          onEditItem={handleEditItemClick}
+        />
+      ) : (
+
+        <View style={styles.spendingContainer}>
+          <Text style={styles.spendingText}>這裡是支出列表</Text>
+        </View>
+      )}
+
 
       <AddCategoryModal
         visible={showModal}
@@ -150,6 +159,17 @@ const BudgetScreen = () => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  // --- START: 為「支出」分頁新增的樣式 ---
+  spendingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  spendingText: {
+    fontSize: 16,
+    color: '#888',
+  },
 });
 
 export default BudgetScreen;

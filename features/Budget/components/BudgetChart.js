@@ -14,6 +14,7 @@ import Svg, { G, Path, Text as SvgText } from 'react-native-svg';
 import * as d3 from 'd3-shape';
 import { BUDGET_COLORS } from '../../../theme/theme-color';
 
+// ... (MONTHS, DEFAULTS, 和 BudgetChart 組件的其他程式碼 ... )
 const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
 const DEFAULTS = {
@@ -159,12 +160,12 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 0,
     backgroundColor: '#fff',
-    zIndex: 1, 
+    // zIndex: 1, <-- 保持移除
   },
   chartWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: -50,
+    marginBottom: -50, // <--- 把它加回來
   },
   centerContent: { position: 'absolute', alignItems: 'center' },
   centerLabel: { fontSize: 14, color: '#999', marginBottom: 4 },

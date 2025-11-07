@@ -3,19 +3,15 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-/**
- * BudgetTabs
- * - 兩個分頁切換：「預算」、「支出」
- * - 由父層控制 activeTab（'budget' | 'spending'）
- * - onTabChange 由父層傳入，切換時呼叫
- */
 const BudgetTabs = ({ activeTab, onTabChange }) => {
   return (
     <View style={styles.container}>
       {/* 預算分頁 */}
       <TouchableOpacity
         style={[styles.tab, activeTab === 'budget' && styles.activeTab]}
-        onPress={() => onTabChange('budget')}
+        onPress={() => {
+          onTabChange('budget');
+        }}
         activeOpacity={0.7}
         accessibilityRole="tab"
         accessibilityState={{ selected: activeTab === 'budget' }}
@@ -30,7 +26,9 @@ const BudgetTabs = ({ activeTab, onTabChange }) => {
       {/* 支出分頁 */}
       <TouchableOpacity
         style={[styles.tab, activeTab === 'spending' && styles.activeTab]}
-        onPress={() => onTabChange('spending')}
+        onPress={() => {
+          onTabChange('spending');
+        }}
         activeOpacity={0.7}
         accessibilityRole="tab"
         accessibilityState={{ selected: activeTab === 'spending' }}

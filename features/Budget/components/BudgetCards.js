@@ -31,13 +31,13 @@ const BudgetCards = ({ items = [], onAddItem, onEditItem }) => {
       {rows.map((row, idx) => (
         <View key={`row-${idx}`} style={styles.row}>
           <View style={{ width: cardWidth }}>
-            {/* 傳入 onEdit={onEditItem} */}
+    
             <BudgetItem item={row.left} height={CARD_HEIGHT} onEdit={onEditItem} />
           </View>
 
           <View style={{ width: cardWidth }}>
             {row.right ? (
-              // 傳入 onEdit={onEditItem}
+        
               <BudgetItem item={row.right} height={CARD_HEIGHT} onEdit={onEditItem} />
             ) : (
               (idx === rows.length - 1) && (

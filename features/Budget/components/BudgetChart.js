@@ -33,7 +33,7 @@ const BudgetChart = ({
   const { width: screenWidth } = useWindowDimensions();
   const [modalVisible, setModalVisible] = useState(false);
 
-  // 維持 70% 螢幕寬度
+ 
   const size = customSize || (screenWidth * 0.7);
 
   const outerR = size / 2;

@@ -4,8 +4,8 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 export default function BudgetCard({
   title,
   amount = 0,
-  percent = 0,          // 0~100
-  color = '#60A5FA',    // 卡片左側條 & 底色
+  percent = 0,      
+  color = '#60A5FA',   
   onPressEdit,
   onPressList,
 }) {

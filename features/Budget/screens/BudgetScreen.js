@@ -86,7 +86,6 @@ const BudgetScreen = () => {
   // 新增/編輯 確認（含防呆）
   const handleModalConfirm = useCallback(
     async (name, amountStr) => {
-      // 金額清洗
       const cleaned = String(amountStr ?? '')
         .replace(/[,，\s]/g, '')
         .replace(/[^\d.-]/g, '');
@@ -111,18 +110,8 @@ const BudgetScreen = () => {
 
           await budgetApi.updateCategoryAmount(selectedMonth, editingCategory.id, amountNum);
         } else {
-          // 新增類別：以名稱對 catalog 找到 categoryId，再新增到該月
-          const all = await budgetApi._debug_getAll?.();
-          const catalog = all?.catalog || [];
-          const found = catalog.find((c) => c.name === name);
-          if (!found) {
-            Alert.alert('提醒', `找不到類別「${name}」，請改用已存在的分類名稱。`);
-            return;
-          }
-          await budgetApi.addCategoryToMonth(selectedMonth, {
-            categoryId: found.id,
-            amount: amountNum,
-          });
+          // ✅ 新增類別：允許自訂名稱，API 會自動建立 catalog 類別並加入該月
+          await budgetApi.addCategoryToMonth(selectedMonth, { name, amount: amountNum });
         }
 
         setShowModal(false);

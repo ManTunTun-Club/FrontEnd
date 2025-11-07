@@ -1,4 +1,6 @@
 // src/services/budgetApi.js
+// 讀取 budgetDatabase.json 作為初始資料；在記憶體內運作（不回寫檔案）
+
 import db from './budgetDatabase.json';
 import { BUDGET_COLORS } from '../theme/theme-color';
 
@@ -43,6 +45,18 @@ const sumPurchasedOf = (month, categoryId) =>
     )
     .reduce((s, e) => s + (Number(e.price) || 0), 0);
 
+// 依名稱找/建類別（使用者可自訂新類別）
+const ensureCategory = (nameRaw) => {
+  const name = String(nameRaw || '').trim();
+  if (!name) return null;
+  const found = _catalog.find(c => c.name === name);
+  if (found) return found;
+
+  const newCat = { id: Date.now(), name };
+  _catalog = [..._catalog, newCat]; // 追加在尾端 → 顏色會照順序對應
+  return newCat;
+};
+
 // ---------- API ----------
 export const budgetApi = {
   // 有資料的月份（依 monthlyBudgets）
@@ -61,7 +75,7 @@ export const budgetApi = {
   },
 
   /**
-   * 該月分類列表（已包含 API 端加總的 spent 與 percentage）
+   * 該月分類列表（API 端加總 spent 與 percentage）
    * return: [{ id, name, amount, spent, percentage, color }]
    */
   async getCategories(month = '8月') {
@@ -83,20 +97,47 @@ export const budgetApi = {
     });
   },
 
-  // 在某月新增/更新分類的預算金額（不動支出歷史）
-  async addCategoryToMonth(month, { categoryId, amount }) {
+  /**
+   * 在某月新增/更新分類預算金額
+   * - 舊用法：{ categoryId, amount }
+   * - 新用法：{ name, amount } 會自動建立 catalog 類別
+   * 回傳：該月的分類列表（同 getCategories(month)）
+   */
+  async addCategoryToMonth(month, payload) {
     await delay();
-    const m = getMonthBudgetEntry(month);
-    const found = m.categories.find(c => c.categoryId === Number(categoryId));
-    if (found) {
-      found.amount = Number(amount) || 0;
+    let categoryId = null;
+
+    if (payload?.categoryId != null) {
+      categoryId = Number(payload.categoryId);
+      // 若傳入 categoryId 但 catalog 裡沒有，則補上一筆（避免脫鉤）
+      if (!_catalog.find(c => c.id === categoryId)) {
+        _catalog = [..._catalog, { id: categoryId, name: `類別#${categoryId}` }];
+      }
+    } else if (payload?.name) {
+      const cat = ensureCategory(payload.name);
+      if (!cat) return this.getCategories(month);
+      categoryId = cat.id;
     } else {
-      m.categories.push({ categoryId: Number(categoryId), amount: Number(amount) || 0 });
+      return this.getCategories(month);
+    }
+
+    const amount = Number(payload?.amount) || 0;
+    const m = getMonthBudgetEntry(month);
+
+    const exists = m.categories.find(c => c.categoryId === categoryId);
+    if (exists) {
+      exists.amount = amount;
+    } else {
+      m.categories.push({ categoryId, amount });
+      // 若原本 _monthlyBudgets 沒這個月，追加
       if (!_monthlyBudgets.find(x => x.month === month)) {
         _monthlyBudgets = [..._monthlyBudgets, m];
+      } else {
+        // 覆寫回去（避免 getMonthBudgetEntry 回傳的是臨時物件）
+        _monthlyBudgets = _monthlyBudgets.map(x => (x.month === month ? m : x));
       }
     }
-    // 回傳最新該月分類列表（含 spent/percentage）
+
     return this.getCategories(month);
   },
 
@@ -105,6 +146,8 @@ export const budgetApi = {
     const m = getMonthBudgetEntry(month);
     const t = m.categories.find(c => c.categoryId === Number(categoryId));
     if (t) t.amount = Number(amount) || 0;
+    // 覆寫回去
+    _monthlyBudgets = _monthlyBudgets.map(x => (x.month === month ? m : x));
     return this.getCategories(month);
   },
 
@@ -128,7 +171,7 @@ export const budgetApi = {
     return { items: paged, total: list.length, page, pageSize };
   },
 
-  // 類別詳情：當月購物車 + 已購買（給你的 BudgetCategoryScreen）
+  // 類別詳情：當月購物車 + 已購買（給 BudgetCategoryScreen）
   async getCategoryCartItems({ month = '8月', categoryId }) {
     await delay();
     return _expenses
@@ -163,4 +206,18 @@ export const budgetApi = {
     _expenses = _expenses.filter(e => e.id !== id);
     return true;
   },
+
+  // 方便頁面載入前取總覽（debug）
+  async _debug_getAll() {
+    await delay();
+    return { catalog: _catalog, monthlyBudgets: _monthlyBudgets, expenses: _expenses };
+  },
+};
+
+// 相容別名（如果你有 import { expensesApi }）
+export const expensesApi = {
+  getExpenses:   budgetApi.getExpenses,
+  addExpense:    budgetApi.addExpense,
+  updateExpense: budgetApi.updateExpense,
+  deleteExpense: budgetApi.deleteExpense,
 };

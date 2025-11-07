@@ -1,6 +1,10 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+<<<<<<< HEAD
 import  Ionicons from 'react-native-vector-icons/Ionicons';
+=======
+import Ionicons from 'react-native-vector-icons/Ionicons';
+>>>>>>> feature/wang-Auth-workflow-done
 import PropTypes from 'prop-types';
 import { 
   colors, 
@@ -43,7 +47,11 @@ const CategoryButton = ({ category, onPress, style }) => {
       case 'med':
         return <Ionicons name="heart" {...iconProps} />;
       default:
+<<<<<<< HEAD
         return <Ionicons name="bag" {...iconProps} />;
+=======
+        return <Ionicons name="help" {...iconProps} />;
+>>>>>>> feature/wang-Auth-workflow-done
     }
   };
 

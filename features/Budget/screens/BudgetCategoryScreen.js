@@ -9,38 +9,38 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Image, 
 } from 'react-native';
 import BudgetGauge from '../components/BudgetGauge';
 import { budgetApi } from '../../../services/budgetApi';
 
-
+/* -------------------- 子組件：商品卡片 -------------------- */
 const CartItemCard = ({ item, color }) => {
   const isPurchased = item.status === 'purchased';
-
-  const statusColor = isPurchased ? color : hexToRgba(color, 0.5); 
+  const statusColor = isPurchased ? color : hexToRgba(color, 0.5);
 
   return (
     <View style={styles.card}>
-      
+      {/* 商品圖片（示意） */}
       <View style={[styles.productImage, { backgroundColor: '#eee' }]}>
-    
-          <Text style={{color: '#999'}}>商品圖</Text>
+        <Text style={{ color: '#999' }}>商品圖</Text>
       </View>
 
       {/* 商品資訊 */}
       <View style={styles.cardInfo}>
-        <Text style={styles.productName} numberOfLines={2}>{item.name}</Text>
+        <Text style={styles.productName} numberOfLines={2}>
+          {item.name}
+        </Text>
+
         <View style={styles.metaRow}>
           <Text style={styles.metaText}>🛍️ {item.source}</Text>
         </View>
         <View style={styles.metaRow}>
           <Text style={styles.metaText}>💳 {item.paymentMethod}</Text>
         </View>
-        
+
         <View style={styles.priceRow}>
           <Text style={[styles.price, { color: statusColor }]}>
-            $ {item.price.toLocaleString()}
+            {`$${item.price.toLocaleString()}`}
           </Text>
         </View>
       </View>
@@ -50,14 +50,14 @@ const CartItemCard = ({ item, color }) => {
         <Text style={[styles.statusText, { color: statusColor }]}>
           {isPurchased ? '已購買' : '預計購買'}
         </Text>
-        <Text style={styles.dateText}>日期: {item.date}</Text>
+        <Text style={styles.dateText}>{`日期: ${item.date}`}</Text>
       </View>
     </View>
   );
 };
 
+/* -------------------- 主畫面 -------------------- */
 const BudgetCategoryScreen = ({ route, navigation }) => {
-  // 從導航參數中取得傳過來的分類資料
   const { category } = route.params || {};
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +80,6 @@ const BudgetCategoryScreen = ({ route, navigation }) => {
     }
   };
 
-  // 計算各項金額
   const spent = items
     .filter(i => i.status === 'purchased')
     .reduce((sum, i) => sum + i.price, 0);
@@ -92,14 +91,23 @@ const BudgetCategoryScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => navigation.goBack()}
+          style={styles.backButton}
+        >
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{category.name}購物車</Text>
-        <View style={{ width: 40 }} /> {/* 佔位用 */}
+
+        <Text style={styles.headerTitle}>
+          {`${category.name}購物車`}
+        </Text>
+
+        <View style={{ width: 40 }} />
       </View>
 
+      {/* 商品清單 */}
       <FlatList
         data={items}
         keyExtractor={item => String(item.id)}
@@ -115,29 +123,37 @@ const BudgetCategoryScreen = ({ route, navigation }) => {
             />
           </View>
         }
-        renderItem={({ item }) => <CartItemCard item={item} color={category.color} />}
-        ListEmptyComponent={
-          !loading && <Text style={styles.emptyText}>此類別尚無商品</Text>
+        renderItem={({ item }) => (
+          <CartItemCard item={item} color={category.color} />
+        )}
+        // 回傳 component 或 null，避免 boolean
+        ListEmptyComponent={() =>
+          loading ? null : (
+            <Text style={styles.emptyText}>此類別尚無商品</Text>
+          )
         }
       />
-      
-      {loading && (
+
+      {/* 載入中遮罩 */}
+      {loading ? (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color={category.color} />
         </View>
-      )}
+      ) : null}
     </SafeAreaView>
   );
 };
 
+/* -------------------- 工具函式 -------------------- */
 const hexToRgba = (hex, alpha = 1) => {
-    if (!hex || !hex.startsWith('#') || hex.length < 7) return hex;
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
-  };
+  if (!hex || !hex.startsWith('#') || hex.length < 7) return hex;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+};
 
+/* -------------------- 樣式 -------------------- */
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f5f5f5' },
   header: {
@@ -158,14 +174,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 20,
   },
-  // 商品卡片樣式
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 16,
     overflow: 'hidden',
     flexDirection: 'row',
-    flexWrap: 'wrap', 
+    flexWrap: 'wrap',
   },
   productImage: {
     width: 100,
@@ -173,13 +188,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  realImage: { width: '100%', height: '100%', resizeMode: 'cover' },
   cardInfo: {
     flex: 1,
     padding: 12,
     justifyContent: 'center',
   },
-  productName: { fontSize: 14, fontWeight: 'bold', color: '#333', marginBottom: 8 },
+  productName: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 8,
+  },
   metaRow: { marginBottom: 4 },
   metaText: { fontSize: 12, color: '#666' },
   priceRow: { marginTop: 8 },

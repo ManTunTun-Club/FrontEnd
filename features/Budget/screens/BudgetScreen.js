@@ -1,5 +1,4 @@
 // src/features/Budget/screens/BudgetScreen.js
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
@@ -40,8 +39,8 @@ const BudgetScreen = () => {
   const [selectedMonth, setSelectedMonth] = useState('8月');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false); 
-  const [editingCategory, setEditingCategory] = useState(null); 
+  const [showModal, setShowModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
 
   const loadBudgetData = useCallback(async (month) => {
     try {
@@ -71,20 +70,22 @@ const BudgetScreen = () => {
   const currentItems = useMemo(() => data?.items || [], [data]);
   const totalBudget = data?.totalBudget ?? 0;
 
-
   const handleAddItemClick = useCallback(() => {
-    setEditingCategory(null); // 清空編輯狀態
+    setEditingCategory(null);
     setShowModal(true);
   }, []);
 
   const handleEditItemClick = useCallback((item) => {
-    setEditingCategory(item); // 設定要編輯的物件
+    setEditingCategory(item);
     setShowModal(true);
   }, []);
 
-  // 按下「確定」
   const handleModalConfirm = useCallback(async (name, amountStr) => {
-    const amountNum = parseInt(amountStr, 10);
+    const cleaned = String(amountStr ?? '')
+      .replace(/[,，\s]/g, '')
+      .replace(/[^\d.-]/g, '');
+    const amountNum = Number(cleaned);
+
     if (!name || isNaN(amountNum) || amountNum < 0) {
       Alert.alert('提醒', '資料無效');
       return;
@@ -92,13 +93,11 @@ const BudgetScreen = () => {
 
     try {
       if (editingCategory) {
-        // 如果有編輯對象，呼叫更新 API
         await budgetApi.updateCategory(editingCategory.id, {
           name,
           amount: amountNum,
         });
       } else {
-        // 如果沒有，呼叫新增 API
         await budgetApi.addCategory({
           name,
           amount: amountNum,
@@ -134,15 +133,15 @@ const BudgetScreen = () => {
 
       <BudgetCards
         items={currentItems}
-        onAddItem={handleAddItemClick}   
-        onEditItem={handleEditItemClick} 
+        onAddItem={handleAddItemClick}
+        onEditItem={handleEditItemClick}
       />
 
       <AddCategoryModal
         visible={showModal}
         onClose={() => setShowModal(false)}
-        onConfirm={handleModalConfirm} 
-        editItem={editingCategory}     
+        onConfirm={handleModalConfirm}
+        editItem={editingCategory}
       />
     </SafeAreaView>
   );

@@ -1,6 +1,4 @@
-
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Image, StyleSheet } from 'react-native';
@@ -15,7 +13,7 @@ import ShopStack from '../features/Shop/navigation/ShopStack'; // Shop (Cart & C
 import { View, Text } from 'react-native';
 
 const Tab = createBottomTabNavigator();
-const RootStack = createNativeStackNavigator();
+const Stack = createNativeStackNavigator();
 
 function HomePlaceholder() {
   return (
@@ -32,14 +30,6 @@ function AIPlaceholder() {
     </View>
   )
 }
-
-// function BudgetPlaceholder() {
-//   return (
-//     <View style={{flex:1, alignItems:'center', justifyContent:'center'}}>
-//       <Text>Budget Placeholder</Text>
-//     </View>
-//   );
-// }
 
 function MainTabs() {
   return (
@@ -81,17 +71,15 @@ function MainTabs() {
   );
 }
 
-export default function RootNavigator() {
+
+export default function MainNavigator() {
   return (
-    <NavigationContainer>
-      <RootStack.Navigator initialRouteName="MainTabs" screenOptions={{ headerShown: false }}>
-        <RootStack.Screen name="MainTabs" component={MainTabs} />
-        {/* 若有全域 Modal/Sheet 畫面，在這裡掛（非屬於單一功能域的） */}
-      </RootStack.Navigator>
-    </NavigationContainer>
+    <Stack.Navigator initialRouteName="MainTabs" screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      {/* 若有全域 Modal/Sheet 畫面，在這裡掛（非屬於單一功能域的） */}
+    </Stack.Navigator>
   );
 }
-
 
 const styles = StyleSheet.create({
   tabBar: {

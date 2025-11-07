@@ -12,6 +12,8 @@ import {
   Platform,
 } from 'react-native';
 
+const onlyDigits = (s = '') => s.replace(/[^\d]/g, ''); // 只保留 0-9
+
 const AddCategoryModal = ({
   visible,
   onClose,
@@ -19,13 +21,15 @@ const AddCategoryModal = ({
   editItem = null,   // { id, name, amount } | null
 }) => {
   const [name, setName] = useState('');
-  const [amountText, setAmountText] = useState('');
+  const [amountText, setAmountText] = useState(''); // 只存純數字字串
 
   useEffect(() => {
     if (visible) {
       if (editItem) {
         setName(editItem.name ?? '');
-        setAmountText(String(editItem.amount ?? ''));
+        // 預填時也轉為純數字（避免舊資料含逗號）
+        const preset = String(editItem.amount ?? '');
+        setAmountText(onlyDigits(preset));
       } else {
         setName('');
         setAmountText('');
@@ -33,7 +37,14 @@ const AddCategoryModal = ({
     }
   }, [visible, editItem]);
 
+  const handleAmountChange = (text) => {
+    // 即時過濾：使用者打任何字母、符號都會被移除
+    const digits = onlyDigits(text);
+    setAmountText(digits);
+  };
+
   const handleConfirm = () => {
+    // 直接把純數字字串交給父層；父層已做 Number 檢查
     onConfirm?.(name?.trim() ?? '', amountText ?? '');
   };
 
@@ -57,16 +68,20 @@ const AddCategoryModal = ({
             onChangeText={setName}
             style={styles.input}
             placeholderTextColor="#ccc"
+            returnKeyType="next"
           />
 
           <Text style={styles.label}>預算金額</Text>
           <TextInput
-            placeholder="輸入預算金額"
+            placeholder="輸入預算金額（僅數字）"
             value={amountText}
-            onChangeText={setAmountText}
-            keyboardType="numeric"
+            onChangeText={handleAmountChange}
+            keyboardType={Platform.select({ ios: 'number-pad', android: 'number-pad' })}
+            // Android 有時仍可輸入非數字，故我們用 onChangeText 再過濾一層
+            // iOS 也可能透過貼上帶入符號，同樣會被過濾
             style={styles.input}
             placeholderTextColor="#ccc"
+            maxLength={12} // 避免過長，依需求可調
           />
 
           <View style={styles.row}>

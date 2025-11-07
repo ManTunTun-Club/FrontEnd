@@ -14,40 +14,47 @@ const hexToRgba = (hex, alpha) => {
   return `rgba(${r},${g},${b},${alpha})`;
 };
 
+const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
 const BudgetItem = ({ item, height = 120, onEdit }) => {
   const navigation = useNavigation();
 
-  const color = item.color || '#E0E0E0';
-  const remainingPct = item.percentage || 0;
-  const juiceHeight = (remainingPct / 100) * height;
+  const color = item?.color || '#E0E0E0';
+  const remainingPct = clamp(Number(item?.percentage ?? 0), 0, 100);
+  const amountNum = Number(item?.amount ?? 0);
+  const nameText = item?.name || '未命名';
+
+  const juiceHeight = Math.round((remainingPct / 100) * height);
 
   return (
     <View style={[styles.itemCard, { height }]}>
+      {/* 背景填充條 */}
       <View style={[styles.juiceBackground, { backgroundColor: hexToRgba(color, 0.15) }]}>
         <View style={[styles.juiceFill, { height: juiceHeight, backgroundColor: color }]} />
       </View>
 
+      {/* 前景內容 */}
       <View style={styles.contentLayer}>
         <View style={styles.infoSection}>
           <View style={styles.leftInfo}>
-            <Text style={styles.amount}>${Number(item.amount || 0).toLocaleString()}</Text>
+            <Text style={styles.amount}>${amountNum.toLocaleString()}</Text>
             <Text style={styles.categoryName} numberOfLines={1}>
-              {item.name || '未命名'}
+              {nameText}
             </Text>
           </View>
           <Text style={styles.percentage}>{remainingPct}%</Text>
         </View>
 
         <View style={styles.buttonSection}>
-          <TouchableOpacity 
-            style={styles.viewButton} 
-            onPress={() => navigation.navigate('CategoryCart', { category: item })}
+          <TouchableOpacity
+            style={styles.viewButton}
+            onPress={() => navigation.navigate('CategoryCart', { category: item })} // ← 確保路由名存在
           >
-             <Image source={require('../../../assets/icons/eye.png')} style={styles.buttonIcon} />
+            <Image source={require('../../../assets/icons/eye.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.editButton} onPress={() => onEdit?.(item)}>
-             <Image source={require('../../../assets/icons/edit.png')} style={styles.buttonIcon} />
+            <Image source={require('../../../assets/icons/edit.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
         </View>
       </View>

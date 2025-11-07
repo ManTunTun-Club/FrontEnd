@@ -73,7 +73,7 @@ const AddCategoryModal = ({
 
           <Text style={styles.label}>預算金額</Text>
           <TextInput
-            placeholder="輸入預算金額（僅數字）"
+            placeholder="輸入預算金額"
             value={amountText}
             onChangeText={handleAmountChange}
             keyboardType={Platform.select({ ios: 'number-pad', android: 'number-pad' })}

@@ -1,3 +1,4 @@
+//SetPayment
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Modal, View, Text, TouchableOpacity, TextInput,
@@ -9,8 +10,9 @@ const PRIMARY = '#49B0F8';
 const CARD = 'card';
 const THIRD = 'third';
 
+//假設
 const DEFAULT_CARD_COMPANIES = ['玉山銀行', '台新銀行', '永豐銀行', '國泰世華', '富邦銀行'];
-const DEFAULT_THIRD = ['Apple Pay', 'LINE Pay', 'JKoPay', '街口支付', '悠遊付'];
+const DEFAULT_THIRD = ['Apple Pay', 'LINE Pay', '街口支付', '悠遊付'];
 
 export default function SetPayment({
   visible,
@@ -18,9 +20,14 @@ export default function SetPayment({
   onSubmit,
   cardCompanies = DEFAULT_CARD_COMPANIES,
   thirdProviders = DEFAULT_THIRD,
-  loadCardTypes, // (bank: string) => Promise<string[]>
+  loadCardTypes, 
+  existingCards = [],
+  initialMethod = null,            // 'card' | 'third' | null
+  initialCompany = '',
+  initialSelectedTypes = [],       // string[]
+  initialThirdProvider = '',
 }) {
-  const [method, setMethod] = useState(null);  // 'card' | 'third' | null
+  const [method, setMethod] = useState(null); 
   const [cardCompany, setCardCompany] = useState('');
   const [cardType, setCardType] = useState('');
   const [thirdProvider, setThirdProvider] = useState('');
@@ -30,7 +37,31 @@ export default function SetPayment({
   const [loadingTypes, setLoadingTypes] = useState(false);  // boolean
   const [loadError, setLoadError] = useState(null);         // string | null
 
-  // 選了銀行就載入卡別
+  const [selectedTypes, setSelectedTypes] = useState([]);
+
+  useEffect(() => {
+    if (!visible) return;
+    setMethod(initialMethod ?? null);
+    setCardCompany(initialCompany ?? '');
+    setSelectedTypes(Array.isArray(initialSelectedTypes) ? initialSelectedTypes : []);
+    setThirdProvider(initialThirdProvider ?? '');
+  }, [visible, initialMethod, initialCompany, initialSelectedTypes, initialThirdProvider]);
+
+
+  const toggleType = (t) => {
+    setSelectedTypes(prev =>
+      prev.includes(t)
+        ? prev.filter(x => x !== t)  // 再點一次取消
+        : [...prev, t]               // 點擊選取
+    );
+  };
+
+  // 切換銀行時清空已選卡別
+  useEffect(() => {
+    setSelectedTypes([]);
+  }, [cardCompany]);
+
+  // 選了銀行才載入卡別
   useEffect(() => {
     if (method !== CARD) return;
     if (!cardCompany) { setCardTypeList([]); setCardType(''); setLoadError(null); return; }
@@ -51,11 +82,20 @@ export default function SetPayment({
       .finally(() => setLoadingTypes(false));
   }, [method, cardCompany, loadCardTypes]);
 
+  const existingCardMap = useMemo(() => {
+    const map = {};
+    existingCards.forEach(c => {
+      if (!map[c.bank]) map[c.bank] = new Set();
+      map[c.bank].add(c.cardType);
+    });
+    return map;
+  }, [existingCards]);
+
   const canConfirm = useMemo(() => {
-    if (method === CARD) return !!cardCompany && !!cardType.trim();
+    if (method === CARD) return !!cardCompany && selectedTypes.length > 0;
     if (method === THIRD) return !!thirdProvider;
     return false;
-  }, [method, cardCompany, cardType, thirdProvider]);
+  }, [method, cardCompany, selectedTypes, thirdProvider]);
 
   const reset = () => {
     setMethod(null);
@@ -72,7 +112,7 @@ export default function SetPayment({
   const handleConfirm = () => {
     if (!canConfirm) return;
     if (method === CARD) {
-      onSubmit?.({ method: CARD, cardCompany, cardType: cardType.trim() });
+      onSubmit?.({ method: CARD, cardCompany, cardTypes: selectedTypes });
     } else {
       onSubmit?.({ method: THIRD, thirdProvider });
     }
@@ -91,7 +131,7 @@ export default function SetPayment({
         >
           <Text style={styles.title}>新增支付方式</Text>
 
-          {/* Step 1：選類型 */}
+          {/* Step 1：選信用卡或是第三支付 */}
           <View style={styles.segment}>
             <TouchableOpacity
               style={[styles.segmentBtn, method === CARD && styles.segmentBtnActive]}
@@ -107,7 +147,7 @@ export default function SetPayment({
             </TouchableOpacity>
           </View>
 
-          {/* Step 2：依選擇顯示欄位 */}
+          {/* Step 2：顯示支付方欄位 */}
           {method === CARD && (
             <View style={{ gap: 12 }}>
               <Text style={styles.label}>發卡行</Text>
@@ -128,17 +168,43 @@ export default function SetPayment({
                 </View>
               )}
 
-              {/* 有清單 → Picker；否則 → 文字輸入（後備） */}
+              {/* 有清單 → Picker */}
               {!loadingTypes && cardCompany && cardTypeList.length > 0 && !loadError && (
-                <View style={styles.pickerWrap}>
-                  <Picker selectedValue={cardType} onValueChange={setCardType}>
-                    <Picker.Item label="請選擇卡別" value="" />
-                    {cardTypeList.map(t => <Picker.Item key={t} label={t} value={t} />)}
-                  </Picker>
+                <View style={styles.chipsWrap}>
+                {cardTypeList.map((t) => {
+                  const alreadyExists = existingCardMap[cardCompany]?.has(t); 
+                  const active = selectedTypes.includes(t);
+                  return (
+                    <TouchableOpacity
+                      key={t}
+                      disabled={alreadyExists} 
+                      onPress={() => toggleType(t)}
+                      style={[
+                        styles.chip,
+                        active && styles.chipActive,
+                        alreadyExists && { opacity: 0.5, borderColor: '#ccc' },
+                      ]}
+                      activeOpacity={alreadyExists ? 1 : 0.8}
+                    >
+                      <Text
+                        style={[
+                          styles.chipText,
+                          active && styles.chipTextActive,
+                          alreadyExists && { color: '#9CA3AF' },
+                        ]}
+                      >
+                        {t}
+                      </Text>
+                      {alreadyExists && (
+                        <Text style={{ fontSize: 10, color: '#9CA3AF', marginTop: 2 }}>已新增</Text>
+                      )}
+                    </TouchableOpacity>
+                  );
+                })}
+
                 </View>
               )}
-
-              {/* 載入失敗或沒提供 API → 後備輸入框 */}
+              {/* 載入失敗或沒提供 API → 後備方法 */}
               {(!loadingTypes && cardCompany && (!!loadError || cardTypeList.length === 0)) && (
                 <>
                   {loadError ? <Text style={styles.hint}>{loadError}</Text> : null}
@@ -209,4 +275,28 @@ const styles = StyleSheet.create({
   confirmBtn: { paddingHorizontal: 16, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: '#000' },
   confirmBtnDisabled: { backgroundColor: '#D1D5DB' },
   confirmText: { color: '#fff', fontWeight: '700' },
+  chipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  chip: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#9DB4FF',
+    backgroundColor: '#fff',
+  },
+  chipActive: {
+    backgroundColor: PRIMARY,
+    borderColor: PRIMARY,
+  },
+  chipText: {
+    color: '#3B5CCC',
+    fontWeight: '600',
+  },
+  chipTextActive: {
+    color: '#fff',
+  },
 });

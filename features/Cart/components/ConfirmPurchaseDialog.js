@@ -13,11 +13,7 @@ import {
   Keyboard,
   ScrollView,
 } from 'react-native';
-<<<<<<< HEAD
-import  Ionicons from 'react-native-vector-icons/Ionicons';
-=======
 import Ionicons from 'react-native-vector-icons/Ionicons';
->>>>>>> feature/wang-Auth-workflow-done
 import PropTypes from 'prop-types';
 
 const palette = {

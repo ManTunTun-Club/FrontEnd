@@ -32,7 +32,7 @@ export default function LoginScreen() {
           keyboardShouldPersistTaps="handled"
           bounces={false}
         >
-          {/* ↑ 上方品牌列（置中） */}
+          {/* ↑ 上方品牌列 */}
           <View style={styles.brandWrap}>
             <Image
               source={require('../../../assets/icons/footer_logo.png')}
@@ -42,7 +42,7 @@ export default function LoginScreen() {
             <Text style={styles.brandText}>捌集免驚</Text>
           </View>
 
-          {/* 白色卡片（置中、限定寬度） */}
+          {/* 白色卡片 */}
           <View style={styles.card}>
             <Text style={styles.title}>歡迎回來！</Text>
 

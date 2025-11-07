@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-// src/App.js
-import React from 'react';
-import RootNavigator from './navigation';
-export default function App() {
-  return <RootNavigator />;
-=======
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AuthNavigator from './navigation/AuthNavigator';
@@ -28,5 +21,4 @@ export default function App() {
       </NavigationContainer>
     </AuthContext.Provider>
   );
->>>>>>> feature/wang-Auth-workflow-done
 }

@@ -9,12 +9,8 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-<<<<<<< HEAD
-import  Ionicons from 'react-native-vector-icons/Ionicons';
-=======
 // Icons
 import Ionicons from 'react-native-vector-icons/Ionicons';
->>>>>>> feature/wang-Auth-workflow-done
 import { EmptyPage, ListSkeleton } from '../components';
 import { cartApi } from '../../../services/cartApi';
 import CartItemCard from '../components/CartItemCard';

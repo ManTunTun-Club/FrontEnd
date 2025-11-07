@@ -1,9 +1,23 @@
+//SignupPaymentScreen
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useAuth } from '../../../App';
 import { COLORS } from '../../../theme/theme-color';
+
+const paymentIcons = {
+  玉山銀行: require('../../../assets/payments/esun.png'),
+  台新銀行: require('../../../assets/payments/taishin.png'),
+  永豐銀行: require('../../../assets/payments/sinopac.png'),
+  國泰世華: require('../../../assets/payments/cathay.png'),
+  富邦銀行: require('../../../assets/payments/fubon.png'),
+  ApplePay: require('../../../assets/payments/applepay.png'),
+  LINEPay: require('../../../assets/payments/linepay.png'),
+  JKoPay: require('../../../assets/payments/jkpay.png'),
+  街口支付: require('../../../assets/payments/jkpay.png'),
+  悠遊付: require('../../../assets/payments/easywallet.png'),
+};
 
 import SetPayment from '../components/SetPayment';
 
@@ -14,9 +28,9 @@ const mockLoadCardTypes = async (bank) => {
   const map = {
     玉山銀行: ['U Bear 卡', 'Pi 拍錢包卡', 'Only 卡'],
     台新銀行: ['FlyGo', 'Black 卡', '太陽神卡'],
-    永豐銀行: ['大戶卡', 'Sport 卡'],
+    永豐銀行: ['DAWAY 卡', 'Sport 卡'],
     國泰世華: ['CUBE', 'KOKO Combo'],
-    富邦銀行: ['J 卡', 'momo 卡'],
+    富邦銀行: ['J 卡', 'momo 卡', 'Costco聯名卡'],
   };
   return map[bank] || [];
 };
@@ -37,26 +51,57 @@ export default function SignupPaymentScreen() {
   const [showSetPayment, setShowSetPayment] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  const addMethod = () => setShowSetPayment(true);
+  const addMethod = () => {           
+    setEditingItem(null);
+    setShowSetPayment(true);
+  };
+
+  // 點既有卡片/支付 → 進入編輯模式
+  const handleEdit = (item) => {
+   setEditingItem(item);
+   setShowSetPayment(true);
+  };
 
   // 小視窗「確認新增」，結果傳回到列表
   const handleSubmitPayment = (payload) => {
-    const id = `${payload.method}-${Date.now()}`;
-    const label =
-      payload.method === 'card'
-        ? `${payload.cardCompany} / ${payload.cardType}`
-        : payload.thirdProvider;
-
-    setMethods((prev) => [
-      ...prev, 
-      { 
-        id, 
-        type: payload.method,            // 'card' | 'third'
-        bank: payload.cardCompany || '',
-        cardType: payload.cardType || '',
+    if (payload.method === 'card' && Array.isArray(payload.cardTypes)) {
+      const now = Date.now();
+      setMethods((prev) => {
+        let base = editingItem ? prev.filter(p => p.id !== editingItem.id) : [...prev];
+        const existed = new Set(base.filter(p => p.type==='card').map(p => `${p.bank}-${p.cardType}`));
+        const newItems = payload.cardTypes
+          .filter(ct => !existed.has(`${payload.cardCompany}-${ct}`))
+          .map((ct, i) => ({
+            id: `card-${now}-${i}`,
+            type: 'card',
+            bank: payload.cardCompany,
+            cardType: ct,
+            provider: '',
+            icon: null,
+          }));
+        return [...base, ...newItems];
+      });
+    } else {
+      // 第三方支付
+      const item = {
+        id: editingItem ? editingItem.id : `third-${Date.now()}`,
+        type: 'third',
+        bank: '',
+        cardType: '',
         provider: payload.thirdProvider || '',
-        icon: null }]);
+        icon: null,
+      };
+      setMethods((prev) => {
+        if (!editingItem) {
+          if (prev.some(p => p.type==='third' && p.provider===item.provider)) return prev;
+          return [...prev, item];
+        }
+        return prev.map(p => (p.id === editingItem.id ? item : p));
+      });
+    }
   };
+
+
 
   const onFinish = () => {
     // API：帳號建立 + 綁定支付方式
@@ -77,19 +122,52 @@ export default function SignupPaymentScreen() {
       </View>
 
       <View style={s.container}>
-        {methods.map(m => {
-          const label = m.type === 'card' ? `${m.bank} / ${m.cardType}` : m.provider;
-          return (
-            <TouchableOpacity key={m.id} onPress={() => handleEdit(m)} activeOpacity={0.8}>
-              <View style={s.methodCard}>
-                <View style={s.iconBox}>
-                  <Image source={require('../../../assets/icons/LOGO.png')} style={{width:24,height:24}} />
+      {/* 信用卡區塊 */}
+      {methods.some(m => m.type === 'card') && (
+        <>
+          <Text style={s.sectionTitle}>信用卡</Text>
+          {methods
+            .filter(m => m.type === 'card')
+            .map(m => (
+              <TouchableOpacity key={m.id} onPress={() => handleEdit(m)} activeOpacity={0.8}>
+                <View style={s.methodCard}>
+                  <View style={s.iconBox}>
+                    <Image
+                      source={paymentIcons[m.bank] || paymentIcons[m.provider] || require('../../../assets/icons/LOGO.png')}
+                      style={{ width: 24, height: 24 }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={s.methodText}>{`${m.bank} / ${m.cardType}`}</Text>
                 </View>
-                <Text style={s.methodText}>{label}</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+              </TouchableOpacity>
+            ))}
+        </>
+      )}
+
+      {/* 第三方支付區塊 */}
+      {methods.some(m => m.type === 'third') && (
+        <>
+          <Text style={[s.sectionTitle, { marginTop: 16 }]}>第三方支付</Text>
+          {methods
+            .filter(m => m.type === 'third')
+            .map(m => (
+              <TouchableOpacity key={m.id} onPress={() => handleEdit(m)} activeOpacity={0.8}>
+                <View style={s.methodCard}>
+                  <View style={s.iconBox}>
+                    <Image
+                      source={paymentIcons[m.bank] || paymentIcons[m.provider] || require('../../../assets/icons/LOGO.png')}
+                      style={{ width: 24, height: 24 }}
+                      resizeMode="contain"
+                    />
+                  </View>
+                  <Text style={s.methodText}>{m.provider}</Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+        </>
+      )}
+
 
         {/* 按鈕 → 小視窗 */}
         <View style={s.addBtnWrap}>
@@ -111,6 +189,11 @@ export default function SignupPaymentScreen() {
         onClose={() => setShowSetPayment(false)}
         onSubmit={handleSubmitPayment}
         loadCardTypes={mockLoadCardTypes}
+        existingCards={methods.filter(m => m.type === 'card' && (!editingItem || m.id !== editingItem.id))}
+        initialMethod={editingItem?.type ?? null}
+        initialCompany={editingItem?.bank ?? ''}
+        initialSelectedTypes={editingItem?.cardType ? [editingItem.cardType] : []}
+        initialThirdProvider={editingItem?.provider ?? ''}
       />
     </SafeAreaView>
   );
@@ -154,8 +237,13 @@ const s = StyleSheet.create({
     gap: 12, marginBottom: 12, backgroundColor: '#FFF',
   },
   iconBox: {
-    width: 40, height: 40, borderRadius: 8, backgroundColor: '#E9EDF5',
-    alignItems: 'center', justifyContent: 'center',
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: '#F7F9FC',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
   },
   methodText: { fontSize: 16, color: '#111827' },
 
@@ -171,8 +259,15 @@ const s = StyleSheet.create({
   },
   doneText: { color: '#FFF', fontWeight: '700' },
   addBtnWrap: {
-  alignItems: 'center',   
-  marginTop: 8,
-  marginBottom: 16,
-},
+    alignItems: 'center',   
+    marginTop: 8,
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#6B8CFF',
+    marginBottom: 8,
+    marginTop: 12,
+  },
 });

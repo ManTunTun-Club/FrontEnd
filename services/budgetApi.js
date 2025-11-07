@@ -129,11 +129,10 @@ export const budgetApi = {
       exists.amount = amount;
     } else {
       m.categories.push({ categoryId, amount });
-      // 若原本 _monthlyBudgets 沒這個月，追加
+      // 若原本 _monthlyBudgets 沒這個月，追加；否則覆寫回去
       if (!_monthlyBudgets.find(x => x.month === month)) {
         _monthlyBudgets = [..._monthlyBudgets, m];
       } else {
-        // 覆寫回去（避免 getMonthBudgetEntry 回傳的是臨時物件）
         _monthlyBudgets = _monthlyBudgets.map(x => (x.month === month ? m : x));
       }
     }
@@ -159,16 +158,24 @@ export const budgetApi = {
     return this.getCategories(month);
   },
 
-  // 支出頁：當月已購買清單（可依類別過濾）
+  // 支出頁：當月清單（附上 categoryName）
   async getExpenses({ month = '8月', status = 'purchased', categoryId = null, page = 1, pageSize = 50 } = {}) {
     await delay();
     let list = _expenses.filter(e => monthLabelFromDate(e.date) === month);
     if (status) list = list.filter(e => e.status === status);
     if (categoryId != null) list = list.filter(e => Number(e.categoryId) === Number(categoryId));
     list.sort((a, b) => (a.date < b.date ? 1 : -1));
+
     const start = (page - 1) * pageSize;
     const paged = list.slice(start, start + pageSize);
-    return { items: paged, total: list.length, page, pageSize };
+
+    // 🔹 幫每筆支出加上類別名稱
+    const withCategory = paged.map(e => ({
+      ...e,
+      categoryName: _catalog.find(c => Number(c.id) === Number(e.categoryId))?.name || '未分類',
+    }));
+
+    return { items: withCategory, total: list.length, page, pageSize };
   },
 
   // 類別詳情：當月購物車 + 已購買（給 BudgetCategoryScreen）

@@ -174,7 +174,7 @@ const BudgetScreen = () => {
                   <View style={styles.expLeft}>
                     <Text style={styles.expTitle} numberOfLines={1}>{item.title}</Text>
                     <Text style={styles.expMeta}>
-                      {item.source} · {item.paymentMethod}
+                      {item.categoryName} · {item.source} · {item.paymentMethod}
                     </Text>
                   </View>
                   <View style={styles.expRight}>

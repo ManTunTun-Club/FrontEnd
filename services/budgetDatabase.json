@@ -32,7 +32,7 @@
     }
   ],
   "expenses": [
-    { "id": "e-1001", "title": "粉紅佳人蘋果", "price": 125,  "categoryId": 1, "source": "Carrefour", "paymentMethod": "家樂福聯名卡", "status": "purchased", "date": "2025-08-05" },
+    { "id": "e-1001", "title": "粉紅佳人蘋果", "price": 3250,  "categoryId": 1, "source": "Carrefour", "paymentMethod": "家樂福聯名卡", "status": "purchased", "date": "2025-08-05" },
     { "id": "e-1002", "title": "衛生紙 24 捲", "price": 250,  "categoryId": 1, "source": "家樂福",     "paymentMethod": "現金",         "status": "planned",   "date": "2025-08-10" },
     { "id": "e-1003", "title": "止痛藥",       "price": 120,  "categoryId": 2, "source": "小林藥局",   "paymentMethod": "信用卡",       "status": "purchased", "date": "2025-08-12" },
 

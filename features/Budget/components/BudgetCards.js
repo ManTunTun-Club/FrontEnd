@@ -1,26 +1,17 @@
 // src/features/Budget/components/BudgetCards.js
-
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  ScrollView,
-  Dimensions,
-} from 'react-native';
+import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import BudgetItem from './BudgetItem';
 import AddItemButton from './AddItemButton';
 
-const BudgetCards = ({ items = [], onAddItem, onEditItem }) => {
+const BudgetCards = ({ month, items = [], onAddItem, onEditItem }) => {
   const { width } = Dimensions.get('window');
   const cardWidth = (width - 30 - 12) / 2;
   const CARD_HEIGHT = 120;
 
   const rows = [];
   for (let i = 0; i < items.length; i += 2) {
-    rows.push({
-      left: items[i],
-      right: items[i + 1] || null,
-    });
+    rows.push({ left: items[i], right: items[i + 1] || null });
   }
 
   const lastRow = rows[rows.length - 1];
@@ -31,18 +22,14 @@ const BudgetCards = ({ items = [], onAddItem, onEditItem }) => {
       {rows.map((row, idx) => (
         <View key={`row-${idx}`} style={styles.row}>
           <View style={{ width: cardWidth }}>
-    
-            <BudgetItem item={row.left} height={CARD_HEIGHT} onEdit={onEditItem} />
+            <BudgetItem item={row.left} height={CARD_HEIGHT} onEdit={onEditItem} month={month} />
           </View>
 
           <View style={{ width: cardWidth }}>
             {row.right ? (
-        
-              <BudgetItem item={row.right} height={CARD_HEIGHT} onEdit={onEditItem} />
+              <BudgetItem item={row.right} height={CARD_HEIGHT} onEdit={onEditItem} month={month} />
             ) : (
-              (idx === rows.length - 1) && (
-                <AddItemButton onPress={onAddItem} height={CARD_HEIGHT} />
-              )
+              idx === rows.length - 1 && <AddItemButton onPress={onAddItem} height={CARD_HEIGHT} />
             )}
           </View>
         </View>
@@ -63,19 +50,9 @@ const BudgetCards = ({ items = [], onAddItem, onEditItem }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  bottomPadding: {
-    height: 20,
-  },
+  container: { flex: 1, paddingHorizontal: 15, paddingVertical: 12 },
+  row: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
+  bottomPadding: { height: 20 },
 });
 
 export default BudgetCards;

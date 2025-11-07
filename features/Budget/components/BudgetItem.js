@@ -1,5 +1,4 @@
 // src/features/Budget/components/BudgetItem.js
-
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -14,12 +13,17 @@ const hexToRgba = (hex, alpha) => {
   return `rgba(${r},${g},${b},${alpha})`;
 };
 
-const BudgetItem = ({ item, height = 120, onEdit }) => {
+const clamp = (n, min, max) => Math.max(min, Math.min(max, n));
+
+const BudgetItem = ({ item, month, height = 120, onEdit }) => {
   const navigation = useNavigation();
 
-  const color = item.color || '#E0E0E0';
-  const remainingPct = item.percentage || 0;
-  const juiceHeight = (remainingPct / 100) * height;
+  const color = item?.color || '#E0E0E0';
+  const remainingPct = clamp(Number(item?.percentage ?? 0), 0, 100);
+  const amountNum = Number(item?.amount ?? 0);
+  const nameText = item?.name || '未命名';
+
+  const juiceHeight = Math.round((remainingPct / 100) * height);
 
   return (
     <View style={[styles.itemCard, { height }]}>
@@ -30,24 +34,22 @@ const BudgetItem = ({ item, height = 120, onEdit }) => {
       <View style={styles.contentLayer}>
         <View style={styles.infoSection}>
           <View style={styles.leftInfo}>
-            <Text style={styles.amount}>${Number(item.amount || 0).toLocaleString()}</Text>
-            <Text style={styles.categoryName} numberOfLines={1}>
-              {item.name || '未命名'}
-            </Text>
+            <Text style={styles.amount}>${amountNum.toLocaleString()}</Text>
+            <Text style={styles.categoryName} numberOfLines={1}>{nameText}</Text>
           </View>
           <Text style={styles.percentage}>{remainingPct}%</Text>
         </View>
 
         <View style={styles.buttonSection}>
-          <TouchableOpacity 
-            style={styles.viewButton} 
-            onPress={() => navigation.navigate('CategoryCart', { category: item })}
+          <TouchableOpacity
+            style={styles.viewButton}
+            onPress={() => navigation.navigate('CategoryCart', { category: item, month })}
           >
-             <Image source={require('../../../assets/icons/eye.png')} style={styles.buttonIcon} />
+            <Image source={require('../../../assets/icons/eye.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.editButton} onPress={() => onEdit?.(item)}>
-             <Image source={require('../../../assets/icons/edit.png')} style={styles.buttonIcon} />
+            <Image source={require('../../../assets/icons/edit.png')} style={styles.buttonIcon} />
           </TouchableOpacity>
         </View>
       </View>
@@ -68,69 +70,18 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     position: 'relative',
   },
-  juiceBackground: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    justifyContent: 'flex-end',
-  },
-  juiceFill: {
-    width: '100%',
-  },
-  contentLayer: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    padding: 12,
-    justifyContent: 'space-between',
-    zIndex: 10,
-  },
-  infoSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  leftInfo: {
-    flex: 1,
-    marginRight: 8,
-  },
-  amount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-    marginBottom: 2,
-  },
-  categoryName: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
-    marginTop: 4,
-  },
-  percentage: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  buttonSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  viewButton: {
-    flex: 1,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-    paddingVertical: 6,
-  },
-  editButton: {
-    flex: 1,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    paddingVertical: 6,
-  },
-  buttonIcon: {
-    width: 24,
-    height: 24,
-    resizeMode: 'contain',
-  },
+  juiceBackground: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'flex-end' },
+  juiceFill: { width: '100%' },
+  contentLayer: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 12, justifyContent: 'space-between', zIndex: 10 },
+  infoSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  leftInfo: { flex: 1, marginRight: 8 },
+  amount: { fontSize: 18, fontWeight: 'bold', color: '#000', marginBottom: 2 },
+  categoryName: { fontSize: 14, color: '#333', fontWeight: '600', marginTop: 4 },
+  percentage: { fontSize: 14, fontWeight: 'bold', color: '#000' },
+  buttonSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  viewButton: { flex: 1, alignItems: 'flex-start', justifyContent: 'center', paddingVertical: 6 },
+  editButton: { flex: 1, alignItems: 'flex-end', justifyContent: 'center', paddingVertical: 6 },
+  buttonIcon: { width: 24, height: 24, resizeMode: 'contain' },
 });
 
 export default BudgetItem;

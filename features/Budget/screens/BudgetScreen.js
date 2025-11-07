@@ -29,7 +29,7 @@ const BudgetScreen = () => {
 
   // 新增/編輯 modal
   const [showModal, setShowModal] = useState(false);
-  const [editingCategory, setEditingCategory] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null); // { id, name, amount, spent, ... }
 
   const loadBudgetData = useCallback(async (month) => {
     try {
@@ -79,11 +79,11 @@ const BudgetScreen = () => {
 
   // 點編輯
   const handleEditItemClick = useCallback((item) => {
-    setEditingCategory(item); // {id, name, amount, ...}
+    setEditingCategory(item); // {id, name, amount, spent, ...}
     setShowModal(true);
   }, []);
 
-  // 新增/編輯 確認
+  // 新增/編輯 確認（含防呆）
   const handleModalConfirm = useCallback(
     async (name, amountStr) => {
       // 金額清洗
@@ -99,11 +99,20 @@ const BudgetScreen = () => {
 
       try {
         if (editingCategory) {
-          // 只更新金額（名稱不在 DB 改，以 catalog 為準）
+          // 🔒 防呆檢查：新預算不得低於已花費金額
+          const currentSpent = Number(editingCategory.spent || 0);
+          if (amountNum < currentSpent) {
+            Alert.alert(
+              '提醒',
+              `此類別已花費 ${currentSpent.toLocaleString()} 元，預算金額不能低於已花費金額。`
+            );
+            return; // 中斷更新
+          }
+
           await budgetApi.updateCategoryAmount(selectedMonth, editingCategory.id, amountNum);
         } else {
-          // 依名稱去 catalog 找對應的 categoryId
-          const all = await budgetApi._debug_getAll();
+          // 新增類別：以名稱對 catalog 找到 categoryId，再新增到該月
+          const all = await budgetApi._debug_getAll?.();
           const catalog = all?.catalog || [];
           const found = catalog.find((c) => c.name === name);
           if (!found) {
@@ -115,6 +124,7 @@ const BudgetScreen = () => {
             amount: amountNum,
           });
         }
+
         setShowModal(false);
         loadBudgetData(selectedMonth);
         if (activeTab === 'spending') {
@@ -156,7 +166,7 @@ const BudgetScreen = () => {
 
       {activeTab === 'budget' ? (
         <BudgetCards
-          month={selectedMonth}              // 傳遞月份
+          month={selectedMonth}              // 傳遞月份，供類別詳情頁使用
           items={currentItems}
           onAddItem={handleAddItemClick}
           onEditItem={handleEditItemClick}
@@ -174,10 +184,14 @@ const BudgetScreen = () => {
                 <View style={styles.expRow}>
                   <View style={styles.expLeft}>
                     <Text style={styles.expTitle} numberOfLines={1}>{item.title}</Text>
-                    <Text style={styles.expMeta}>{item.source} · {item.paymentMethod}</Text>
+                    <Text style={styles.expMeta}>
+                      {item.source} · {item.paymentMethod}
+                    </Text>
                   </View>
                   <View style={styles.expRight}>
-                    <Text style={styles.expPrice}>{`$${Number(item.price || 0).toLocaleString()}`}</Text>
+                    <Text style={styles.expPrice}>
+                      {`$${Number(item.price || 0).toLocaleString()}`}
+                    </Text>
                     <Text style={styles.expDate}>{item.date}</Text>
                   </View>
                 </View>

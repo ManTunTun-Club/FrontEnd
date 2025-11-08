@@ -66,51 +66,33 @@ const ConfirmPurchaseDialog = ({ visible, item, onCancel, onConfirm }) => {
       animationType="fade"
       onRequestClose={onCancel}
     >
-      {/* Tap background to close */}
+      {/* 點背景關閉 */}
       <TouchableWithoutFeedback onPress={onCancel}>
         <View style={styles.overlay}>
-          {/* Prevent content tap from bubbling up to close */}
+          {/* 阻擋內層點擊冒泡關閉 */}
           <TouchableWithoutFeedback onPress={() => {}}>
             <KeyboardAvoidingView
-              behavior={Platform.select({ ios: 'padding', android: undefined, default: undefined })}
-              keyboardVerticalOffset={72}
+              behavior={Platform.select({ ios: 'padding', android: undefined })}
+              keyboardVerticalOffset={Platform.select({ ios: 80, android: 0 })}
               style={styles.dialogWrap}
             >
+              {/* 內層點擊關鍵盤隱藏 */}
               <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <View style={styles.container}>
-                  {/* Top-right small round close button */}
-                  <TouchableOpacity
-                    onPress={onCancel}
-                    style={styles.closeBtn}
-                    activeOpacity={0.9}
-                    accessibilityRole="button"
-                    accessibilityLabel="關閉"
-                  >
-                    <Ionicons name="close" size={16} color={palette.primaryDim} />
-                  </TouchableOpacity>
+                  {/* 頂部標題（已移除右上叉叉與那條區塊） */}
+                  <View style={styles.headerRow}>
+                    <Text style={styles.headerTitle} numberOfLines={2}>
+                      {item.title}
+                    </Text>
+                  </View>
 
                   <ScrollView
                     style={{ flex: 1 }}
-                    contentContainerStyle={[styles.content, { paddingBottom: FOOTER_HEIGHT, flexGrow: 1 }]}
+                    contentContainerStyle={[styles.content, { paddingBottom: FOOTER_HEIGHT }]}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                   >
-                    {/*<View style={styles.headRow}>
-                      <View style={styles.iconWrap}>
-                        <Ionicons name="cash-outline" size={18} color={palette.subtext} />
-                      </View>
-                      <Text style={styles.itemTitle} numberOfLines={2}>
-                        {item.title}
-                      </Text>
-                    </View>*/}
-                    <View style={styles.headRow}>
-                      <View style={styles.iconPlaceholder} /> 
-                      <Text style={styles.itemTitle} numberOfLines={2}>
-                        {item.title}
-                      </Text>
-                    </View>
-
-                    {/* price input */}
+                    {/* 金額輸入列 */}
                     <View style={styles.amountPill}>
                       <Text style={styles.prefix}>NT$</Text>
                       <TextInput
@@ -140,7 +122,7 @@ const ConfirmPurchaseDialog = ({ visible, item, onCancel, onConfirm }) => {
                       )}
                     </View>
 
-                    {/* hint */}
+                    {/* 提示條 */}
                     <View
                       style={[
                         styles.hintBar,
@@ -159,7 +141,7 @@ const ConfirmPurchaseDialog = ({ visible, item, onCancel, onConfirm }) => {
                     </View>
                   </ScrollView>
 
-                  {/* Footer */}
+                  {/* 底部按鈕列 */}
                   <View style={styles.footer}>
                     <Pressable
                       onPress={onCancel}
@@ -210,19 +192,22 @@ ConfirmPurchaseDialog.propTypes = {
 };
 
 const styles = StyleSheet.create({
-  /** Fullscreen overlay */
+  /** 全螢幕半透明背景（只當背景，不做置中） */
   overlay: {
     flex: 1,
     backgroundColor: palette.overlay,
+  },
+
+  /** 置中容器（負責水平垂直置中與安全距） */
+  dialogWrap: {
+    flex: 1,
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.md,
   },
 
-  /** Dialog outer wrapper */
-  dialogWrap: { width: '100%' },
-
-  /** Dialog content container */
+  /** 對話框 */
   container: {
     width: '92%',
     maxWidth: 420,
@@ -230,7 +215,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     overflow: 'hidden',
     maxHeight: '78%',
-    minHeight: 240,  
+    minHeight: 236,
+    alignSelf: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowRadius: 18,
@@ -238,53 +224,31 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
 
-  /** right top corner close button */
-  closeBtn: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#E9F0F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 2,
-  },
-
-  content: {
+  /** 頂部標題（取代原本帶叉叉的那條） */
+  headerRow: {
+    paddingTop: 14,
     paddingHorizontal: 16,
-    paddingTop: 18,
-  },
-
-  headRow: {
+    paddingBottom: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: palette.line,
     alignItems: 'center',
-    marginBottom: spacing.md,
   },
-  /*iconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#ECF2F6',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-  },*/
-  iconPlaceholder: {
-    width: 28,
-    height: 20,
-    marginBottom: 8,
-  },
-  itemTitle: {
+  headerTitle: {
     textAlign: 'center',
     color: palette.text,
-    fontSize: 15.5,
-    fontWeight: '600',
-    lineHeight: 21,
-    paddingHorizontal: 8,
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 22,
   },
 
-  /** price input */
+  /** 內文容器 */
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 28,        // 與標題區拉開距離
+    paddingBottom: 20,     // 讓下方提示欄與按鈕之間更平衡
+  },
+
+  /** 金額輸入 */
   amountPill: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -317,6 +281,7 @@ const styles = StyleSheet.create({
   },
   clearBtn: { marginLeft: 6 },
 
+  /** 提示條 */
   hintBar: {
     marginTop: spacing.sm,
     borderRadius: 8,
@@ -333,6 +298,7 @@ const styles = StyleSheet.create({
   },
   hintTextStrong: { fontWeight: '500' },
 
+  /** 底部按鈕列 */
   footer: {
     flexDirection: 'row',
     gap: spacing.md,

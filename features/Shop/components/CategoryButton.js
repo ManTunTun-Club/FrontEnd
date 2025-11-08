@@ -39,9 +39,15 @@ const CategoryButton = ({ category, onPress, style }) => {
       case 'food':
         return <Ionicons name="restaurant" {...iconProps} />;
       case 'life':
-        return <Ionicons name="bag" {...iconProps} />;
+        return <Ionicons name="home" {...iconProps} />;
       case 'med':
-        return <Ionicons name="heart" {...iconProps} />;
+        return <Ionicons name="medkit" {...iconProps} />;
+      case 'clothes':
+        return <Ionicons name="shirt" {...iconProps} />;
+      case 'electronics':
+        return <Ionicons name="phone-portrait" {...iconProps} />;
+      case 'game':
+        return <Ionicons name="game-controller" {...iconProps} />;
       default:
         return <Ionicons name="bag" {...iconProps} />;
     }

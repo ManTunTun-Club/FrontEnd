@@ -12,7 +12,7 @@ import Button from './Button';
 
 const EmptyPage = ({
   icon = '📦',
-  title = '沒有資料',
+  title = '購物車是空的',
   description = '目前沒有任何內容',
   actionTitle,
   onAction,
